@@ -1,0 +1,16 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 5
+    paths:
+        - src
+        - config
+        - routes
+        - database
+        - tests/Fixtures
+    ignoreErrors:
+        # This is the package's own config file; env() here is resolved when the config is published/cached.
+        -
+            identifier: larastan.noEnvCallsOutsideOfConfig
+            path: config/flutter-bridge.php
