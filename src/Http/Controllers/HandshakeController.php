@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atannex\LaravelFlutterBridge\Http\Controllers;
 
 use Atannex\LaravelFlutterBridge\Broadcasting\BroadcastGate;
+use Atannex\LaravelFlutterBridge\Fortify\FortifyBridge;
 use Atannex\LaravelFlutterBridge\Models\FlutterApp;
 use Atannex\LaravelFlutterBridge\Services\FlutterBridgeManager;
 use Atannex\LaravelFlutterBridge\Services\FlutterResponse;
@@ -47,7 +48,9 @@ class HandshakeController extends Controller
                 'prefix' => $this->prefix(),
             ],
             'app' => $app?->toBridgeArray(),
-            'features' => $bridge->features(),
+            'features' => array_merge($bridge->features(), [
+                'fortify' => app(FortifyBridge::class)->discovery(),
+            ]),
             'endpoints' => Payload::object($endpoints),
             'broadcasting' => $this->broadcasting($endpoints),
             'connection' => [
@@ -74,10 +77,12 @@ class HandshakeController extends Controller
      */
     public function config(Request $request): JsonResponse
     {
-        return FlutterResponse::success(
-            Payload::object($this->remoteConfig(BridgeRequest::app($request))),
-            'Remote config retrieved'
-        );
+        $config = $this->remoteConfig(BridgeRequest::app($request));
+        $features = isset($config['features']) && is_array($config['features']) ? $config['features'] : [];
+        $features['fortify'] = app(FortifyBridge::class)->discovery();
+        $config['features'] = $features;
+
+        return FlutterResponse::success(Payload::object($config), 'Remote config retrieved');
     }
 
     /**

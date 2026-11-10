@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atannex\LaravelFlutterBridge\Http\Controllers;
 
+use Atannex\LaravelFlutterBridge\Http\Controllers\Concerns\InteractsWithFortify;
 use Atannex\LaravelFlutterBridge\Http\Controllers\Concerns\IssuesFlutterTokens;
 use Atannex\LaravelFlutterBridge\Services\FlutterAuthenticator;
 use Atannex\LaravelFlutterBridge\Services\FlutterResponse;
@@ -21,6 +22,7 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    use InteractsWithFortify;
     use IssuesFlutterTokens;
 
     /**
@@ -32,9 +34,16 @@ class AuthController extends Controller
 
         // A custom authenticator (config or Fortify) validates its own credential fields.
         $custom = $authenticator->usesCustomAuthenticator();
+        $fortify = $this->fortify();
+        $username = $fortify->username();
+
+        // Fortify's CanonicalizeUsername (fortify.lowercase_usernames).
+        $fortify->canonicalize($request, $username);
 
         $validated = $request->validate([
-            'email' => $custom ? ['nullable', 'string'] : ['required', 'string', 'email'],
+            $username => $custom
+                ? ['nullable', 'string']
+                : array_merge(['required', 'string'], $username === 'email' ? ['email'] : []),
             'password' => ['required', 'string'],
             'code' => ['nullable', 'string', 'max:255'],
             'recovery_code' => ['nullable', 'string', 'max:255'],
@@ -48,7 +57,7 @@ class AuthController extends Controller
 
         if ($user === null) {
             throw ValidationException::withMessages([
-                'email' => [trans('auth.failed')],
+                $username => [trans('auth.failed')],
             ]);
         }
 
@@ -89,6 +98,12 @@ class AuthController extends Controller
     {
         $this->ensureFeature('registration');
 
+        // Mirror the server: no sign-up when Fortify's registration feature is off.
+        if ($this->fortify()->active()) {
+            $this->fortify()->ensureEnabled('registration');
+            $this->fortify()->canonicalize($request, $this->fortify()->email());
+        }
+
         if ($authenticator->usesCustomRegistration()) {
             // The action (config or Fortify CreatesNewUsers) validates its own fields.
             $validated = $request->validate([
@@ -121,8 +136,18 @@ class AuthController extends Controller
             ]);
         }
 
+        $verificationRequired = false;
+
         if ($user instanceof Authenticatable) {
+            // Laravel's / Fortify's listeners run as for a web sign-up (e.g. the verification link).
             event(new Registered($user));
+
+            // The app verifies with a code: email one right away (docs/FORTIFY.md).
+            $verificationRequired = $this->fortify()->enabled('email_verification') && $this->needsEmailVerification($user);
+
+            if ($verificationRequired && config('flutter-bridge.fortify.verification.send_code_on_register', true)) {
+                $this->sendVerificationCode($user);
+            }
         }
 
         $deviceName = $validated['device_name'] ?? 'Flutter-Client';
@@ -130,11 +155,10 @@ class AuthController extends Controller
             ? $this->issueTokens($request, $user, $deviceName, $validated['device_id'] ?? null)
             : ['authorization' => [], 'connection' => null];
 
-        return FlutterResponse::success(
-            $this->authPayload($request, $user, $issued['authorization'], $issued['connection']),
-            'Registration successful',
-            201
-        );
+        $payload = $this->authPayload($request, $user, $issued['authorization'], $issued['connection']);
+        $payload['email_verification_required'] = $verificationRequired;
+
+        return FlutterResponse::success($payload, 'Registration successful', 201);
     }
 
     /**

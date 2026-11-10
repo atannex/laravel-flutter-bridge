@@ -69,6 +69,60 @@ class FlutterBridgeException extends HttpException
     }
 
     /**
+     * A Fortify feature that is off on the server (or Fortify is not installed).
+     */
+    public static function fortifyFeatureDisabled(string $feature): self
+    {
+        return new self(__('This feature is not available.'), 404, 'feature_disabled', ['feature' => $feature]);
+    }
+
+    public static function passwordConfirmationRequired(): self
+    {
+        return new self(__('Please confirm your password to continue.'), 423, 'password_confirmation_required');
+    }
+
+    /**
+     * A wrong, expired or locked emailed code (VerificationCodeBroker result).
+     */
+    public static function code(string $result): self
+    {
+        return match ($result) {
+            'code_expired' => new self(__('This code has expired. Please request a new one.'), 422, 'code_expired', ['code' => [__('This code has expired. Please request a new one.')]]),
+            'code_locked' => new self(__('Too many wrong codes. Please request a new one.'), 423, 'code_locked', ['code' => [__('Too many wrong codes. Please request a new one.')]]),
+            default => new self(__('This code is invalid.'), 422, 'code_invalid', ['code' => [__('This code is invalid.')]]),
+        };
+    }
+
+    public static function alreadyVerified(): self
+    {
+        return new self(__('Your email address is already verified.'), 409, 'already_verified');
+    }
+
+    public static function twoFactorNotEnabled(): self
+    {
+        return new self(__('Two-factor authentication has not been enabled.'), 404, 'two_factor_not_enabled');
+    }
+
+    public static function twoFactorInvalid(string $message): self
+    {
+        return new self($message, 422, 'two_factor_invalid', ['code' => [$message]]);
+    }
+
+    public static function resetTokenInvalid(?string $message = null): self
+    {
+        $message ??= __('This password reset token is invalid.');
+
+        return new self($message, 422, 'reset_token_invalid', ['email' => [$message]]);
+    }
+
+    public static function passwordInvalid(): self
+    {
+        $message = __('The provided password was incorrect.');
+
+        return new self($message, 422, 'password_invalid', ['password' => [$message]]);
+    }
+
+    /**
      * @param  array<string, mixed>  $details
      */
     public static function upgradeRequired(array $details): self

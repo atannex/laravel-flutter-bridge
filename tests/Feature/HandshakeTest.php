@@ -66,6 +66,26 @@ class HandshakeTest extends TestCase
             'connections.index' => 'api/flutter/connections',
             'connections.revoke' => 'api/flutter/connections/{connection}',
             'connections.revoke_others' => 'api/flutter/connections',
+            // Bridge 2.2: Laravel Fortify (docs/FORTIFY.md)
+            'auth.password.forgot' => 'api/flutter/auth/forgot-password',
+            'auth.password.verify_code' => 'api/flutter/auth/reset-password/verify-code',
+            'auth.password.reset' => 'api/flutter/auth/reset-password',
+            'auth.email.send' => 'api/flutter/auth/email/verification-notification',
+            'auth.email.verify' => 'api/flutter/auth/email/verify',
+            'auth.user.confirm_password' => 'api/flutter/auth/user/confirm-password',
+            'auth.user.confirmed_password_status' => 'api/flutter/auth/user/confirmed-password-status',
+            'auth.user.profile' => 'api/flutter/auth/user/profile-information',
+            'auth.user.password' => 'api/flutter/auth/user/password',
+            'auth.two_factor.enable' => 'api/flutter/auth/user/two-factor-authentication',
+            'auth.two_factor.disable' => 'api/flutter/auth/user/two-factor-authentication',
+            'auth.two_factor.confirm' => 'api/flutter/auth/user/confirmed-two-factor-authentication',
+            'auth.two_factor.qr_code' => 'api/flutter/auth/user/two-factor-qr-code',
+            'auth.two_factor.secret_key' => 'api/flutter/auth/user/two-factor-secret-key',
+            'auth.two_factor.recovery_codes' => 'api/flutter/auth/user/two-factor-recovery-codes',
+            'auth.two_factor.regenerate_recovery_codes' => 'api/flutter/auth/user/two-factor-recovery-codes',
+            'auth.passkeys.index' => 'api/flutter/auth/user/passkeys',
+            'auth.passkeys.update' => 'api/flutter/auth/user/passkeys/{passkey}',
+            'auth.passkeys.destroy' => 'api/flutter/auth/user/passkeys/{passkey}',
         ];
 
         ksort($expected);

@@ -44,7 +44,8 @@ class CustomAuthTest extends TestCase
 
         $app['config']->set('auth.providers.users.model', TwoFactorUser::class);
         $app['config']->set('flutter-bridge.auth.user_model', TwoFactorUser::class);
-        $app['config']->set('fortify.features', [Features::twoFactorAuthentication()]);
+        // Sign-up over the bridge follows Fortify's registration feature (2.2).
+        $app['config']->set('fortify.features', [Features::registration(), Features::twoFactorAuthentication()]);
         $app['config']->set('fortify-options', []);
     }
 
@@ -250,7 +251,7 @@ class CustomAuthTest extends TestCase
 
     public function test_unconfirmed_secret_is_ignored_when_fortify_confirms(): void
     {
-        config(['fortify.features' => [Features::twoFactorAuthentication(['confirm' => true])]]);
+        config(['fortify.features' => [Features::registration(), Features::twoFactorAuthentication(['confirm' => true])]]);
         $user = $this->makeUser();
         $this->enableTwoFactor($user, confirmed: false);
 

@@ -40,7 +40,9 @@ Welcome to the **Enterprise Laravel & Flutter Bridge Suite** documentation. This
     Using Laravel's native notification system with the `flutter_push` driver.
 12. [**Connection Management Protocol (v2)**](CONNECTIONS.md)  
     Handshake, live connection sessions, heartbeats, remote sign-out, server→client commands, app keys and version policy.
-13. [**Troubleshooting & FAQ**](TROUBLESHOOTING.md)  
+13. [**Laravel Fortify over the bridge (2.2)**](FORTIFY.md)  
+    Password reset and email verification with codes, profile/password updates, password confirmation, two-factor and passkey management through Fortify.
+14. [**Troubleshooting & FAQ**](TROUBLESHOOTING.md)  
     Networking rules (10.0.2.2 vs localhost), CORS, Reverb firewall setup, and debugging 401 loops.
 
 ---

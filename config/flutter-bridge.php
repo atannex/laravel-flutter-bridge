@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+use Atannex\LaravelFlutterBridge\Notifications\Fortify\ResetPasswordCodeNotification;
+use Atannex\LaravelFlutterBridge\Notifications\Fortify\VerifyEmailCodeNotification;
 
 return [
     /*
@@ -93,6 +95,16 @@ return [
     |   flutter-heartbeat connections/{id}/heartbeat and /disconnect
     |   flutter-api       every other bridge route
     |
+    | Laravel Fortify endpoints (docs/FORTIFY.md), on top of flutter-api for
+    | the signed-in ones:
+    |
+    |   flutter-password-reset  auth/forgot-password
+    |   flutter-codes           auth/reset-password/verify-code, auth/reset-password,
+    |                           auth/email/verify
+    |   flutter-verification    auth/email/verification-notification
+    |   flutter-confirm-password auth/user/confirm-password
+    |   flutter-account         profile, password, two-factor and passkey management
+    |
     */
     'rate_limits' => [
         'auth' => [
@@ -119,6 +131,28 @@ return [
             // Keyed by user id, or IP for guests.
             'per_minute' => env('FLUTTER_RATE_LIMIT_API', 120),
         ],
+        'password_reset' => [
+            // Reset emails, keyed by lowercase email + IP.
+            'per_minute' => env('FLUTTER_RATE_LIMIT_PASSWORD_RESET', 3),
+            // Keyed by IP only.
+            'per_ip_per_minute' => env('FLUTTER_RATE_LIMIT_PASSWORD_RESET_IP', 10),
+        ],
+        'codes' => [
+            // Code / reset submissions, keyed by lowercase email (or user) + IP.
+            'per_minute' => env('FLUTTER_RATE_LIMIT_CODES', 10),
+        ],
+        'verification' => [
+            // Verification emails, keyed by user (Fortify's "6,1").
+            'per_minute' => env('FLUTTER_RATE_LIMIT_VERIFICATION', 6),
+        ],
+        'confirm_password' => [
+            // Keyed by user.
+            'per_minute' => env('FLUTTER_RATE_LIMIT_CONFIRM_PASSWORD', 6),
+        ],
+        'account' => [
+            // Keyed by user.
+            'per_minute' => env('FLUTTER_RATE_LIMIT_ACCOUNT', 30),
+        ],
     ],
 
     /*
@@ -132,6 +166,60 @@ return [
     */
     'two_factor' => [
         'max_attempts' => (int) env('FLUTTER_2FA_MAX_ATTEMPTS', 5),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Laravel Fortify over the bridge (docs/FORTIFY.md)
+    |--------------------------------------------------------------------------
+    |
+    | When laravel/fortify is installed and configured, the bridge exposes
+    | Fortify's account features to the app with bearer tokens, through
+    | Fortify's own actions, rules, events and config/fortify.php features.
+    | Disabled features answer 404 "feature_disabled".
+    |
+    */
+    'fortify' => [
+        // 'auto' = on when Fortify is installed and configured; false = off.
+        'enabled' => env('FLUTTER_FORTIFY', 'auto'),
+
+        // forgot-password delivery: 'code' (emailed code, for the app) or
+        // 'link' (Fortify's emailed web link; reset with its `token`).
+        'reset_channel' => env('FLUTTER_FORTIFY_RESET_CHANNEL', 'code'),
+
+        // Emailed codes (password reset, email verification).
+        'codes' => [
+            'length' => (int) env('FLUTTER_FORTIFY_CODE_LENGTH', 6),
+            // Seconds a code stays valid.
+            'ttl' => (int) env('FLUTTER_FORTIFY_CODE_TTL', 600),
+            // Wrong codes before it locks (423 code_locked).
+            'max_attempts' => (int) env('FLUTTER_FORTIFY_CODE_MAX_ATTEMPTS', 5),
+            // Cache store holding hashed codes (null = default store).
+            'cache_store' => env('FLUTTER_FORTIFY_CODE_STORE'),
+        ],
+
+        // Seconds the reset_token from reset-password/verify-code lasts (one use).
+        'reset_token_ttl' => (int) env('FLUTTER_FORTIFY_RESET_TOKEN_TTL', 900),
+
+        'verification' => [
+            // Email a verification code after auth/register (MustVerifyEmail users).
+            'send_code_on_register' => true,
+            // Email a code after an email change on auth/user/profile-information.
+            'send_code_on_email_change' => true,
+        ],
+
+        // Notification classes receiving (string $code, int $expiresIn).
+        'notifications' => [
+            'reset_password' => ResetPasswordCodeNotification::class,
+            'verify_email' => VerifyEmailCodeNotification::class,
+        ],
+
+        // Add email_verified, two_factor_enabled, … to `user` (docs/FORTIFY.md §4):
+        // 'auto' = default payload only, true = also a custom user_presenter's array.
+        'user_state' => 'auto',
+
+        // Advertised password_min; null reads Password::defaults().
+        'password_min' => null,
     ],
 
     /*

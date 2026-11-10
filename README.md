@@ -202,6 +202,31 @@ endpoints (`auth/2fa/send-otp`, `auth/2fa/verify`) are a separate feature; set
 
 ---
 
+## 🔑 Laravel Fortify over the bridge (2.2)
+
+With **Laravel Fortify** installed, the app gets every Fortify account feature with bearer tokens,
+through Fortify's own actions, password rules, events and `config/fortify.php` features. Nothing to
+register: the routes are under the bridge prefix, and a feature that is off in Fortify answers
+`404 feature_disabled`. The full contract is [`docs/FORTIFY.md`](docs/FORTIFY.md).
+
+| Flow | Endpoints |
+| :--- | :--- |
+| Forgot / reset password with an emailed **code** | `auth/forgot-password` → `auth/reset-password/verify-code` → `auth/reset-password` (also accepts the `token` of Fortify's emailed link); revokes all the user's bridge sessions |
+| Email verification with a code | `auth/email/verification-notification`, `auth/email/verify` (a code is also emailed after `auth/register`) |
+| Profile and password | `PUT auth/user/profile-information`, `PUT auth/user/password` (`revoke_other_sessions`) |
+| Password confirmation (per token, `auth.password_timeout`) | `auth/user/confirm-password`, `auth/user/confirmed-password-status`; sensitive endpoints answer `423 password_confirmation_required` |
+| Authenticator app | enable, QR code (`svg`, `otpauth://` url), secret key, confirm, recovery codes, regenerate, disable under `auth/user/two-factor-*` |
+| Passkeys (`laravel/passkeys`) | list, rename, delete under `auth/user/passkeys` |
+
+Codes are 6 digits, stored hashed in the cache, valid 10 minutes, locked after 5 wrong attempts and
+usable once (`flutter-bridge.fortify.codes`). The handshake publishes what works under
+`features.fortify`; `auth/me` and every auth response add `email_verified`, `two_factor_enabled`,
+`two_factor_pending_confirmation` and `passkeys_count` to the default user payload (a custom
+`user_presenter` can merge `FortifyUserState::for($user)`, or set `fortify.user_state` to `true`).
+Set `FLUTTER_FORTIFY=false` to keep the 2.1 behaviour.
+
+---
+
 ## 🛠️ Artisan Commands
 
 ### Generate Dart Model from Eloquent

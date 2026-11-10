@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atannex\LaravelFlutterBridge\Services;
 
+use Atannex\LaravelFlutterBridge\Fortify\FortifyBridge;
+use Atannex\LaravelFlutterBridge\Fortify\FortifyUserState;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Database\Eloquent\Model;
@@ -55,8 +57,11 @@ class FlutterAuthenticator
             return $user instanceof Authenticatable ? $user : null;
         }
 
+        // Built-in check on Fortify's username field (fortify.username), else "email".
+        $field = app(FortifyBridge::class)->username();
+
         /** @var (Model&Authenticatable)|null $user */
-        $user = $userModel::query()->where('email', (string) $request->input('email'))->first();
+        $user = $userModel::query()->where($field, (string) $request->input($field))->first();
 
         if ($user === null || ! Hash::check((string) $request->input('password'), $user->getAuthPassword())) {
             return null;
@@ -104,7 +109,10 @@ class FlutterAuthenticator
     {
         $presenter = $this->resolveCallable(config('flutter-bridge.auth.user_presenter'), 'user_presenter');
 
-        return $presenter !== null ? $presenter($user) : $user;
+        // The account-security state of docs/FORTIFY.md §4 (flutter-bridge.fortify.user_state).
+        return $presenter !== null
+            ? FortifyUserState::merge($user, $presenter($user), true)
+            : FortifyUserState::merge($user, $user);
     }
 
     /**
@@ -123,20 +131,22 @@ class FlutterAuthenticator
         $recoveryCode = $this->normalizeCode($request->input('recovery_code'));
 
         if ($code === null && $recoveryCode === null) {
+            $this->fireTwoFactorEvent('TwoFactorAuthenticationChallenged', $user);
+
             return self::TWO_FACTOR_REQUIRED;
         }
 
-        if (! $user instanceof Model) {
-            return self::TWO_FACTOR_INVALID;
-        }
+        // Same order as Fortify's TwoFactorAuthenticatedSessionController:
+        // a matching recovery code is replaced, otherwise the TOTP code must verify.
+        if ($user instanceof Model
+            && (($recoveryCode !== null && $this->consumeRecoveryCode($user, $recoveryCode))
+                || ($code !== null && $this->validTotpCode($user, $code)))) {
+            $this->fireTwoFactorEvent('ValidTwoFactorAuthenticationCodeProvided', $user);
 
-        if ($code !== null && $this->validTotpCode($user, $code)) {
             return null;
         }
 
-        if ($recoveryCode !== null && $this->consumeRecoveryCode($user, $recoveryCode)) {
-            return null;
-        }
+        $this->fireTwoFactorEvent('TwoFactorAuthenticationFailed', $user);
 
         return self::TWO_FACTOR_INVALID;
     }
@@ -317,6 +327,18 @@ class FlutterAuthenticator
         }
 
         return app('encrypter');
+    }
+
+    /**
+     * Dispatch one of Fortify's two-factor events (Laravel\Fortify\Events\*) when available.
+     */
+    protected function fireTwoFactorEvent(string $event, Authenticatable $user): void
+    {
+        $class = 'Laravel\\Fortify\\Events\\'.$event;
+
+        if (class_exists($class)) {
+            event(new $class($user));
+        }
     }
 
     /**

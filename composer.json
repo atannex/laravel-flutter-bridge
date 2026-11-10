@@ -1,6 +1,6 @@
 {
   "name": "atannex/laravel-flutter-bridge",
-  "description": "Enterprise-grade Laravel bridge for Flutter applications: Sanctum auth with rotating refresh tokens, connection sessions & remote sign-out, app keys with version policy, Reverb broadcasting, device registration, and Dart code generation.",
+  "description": "Enterprise-grade Laravel bridge for Flutter applications: Sanctum auth with rotating refresh tokens, Laravel Fortify account features over bearer tokens, connection sessions & remote sign-out, app keys with version policy, Reverb broadcasting, device registration, and Dart code generation.",
   "keywords": [
     "laravel",
     "flutter",
@@ -14,7 +14,10 @@
     "sessions",
     "heartbeat",
     "refresh-tokens",
-    "websockets"
+    "websockets",
+    "fortify",
+    "two-factor",
+    "passkeys"
   ],
   "license": "MIT",
   "type": "library",
@@ -36,7 +39,8 @@
   "suggest": {
     "laravel/sanctum": "Required for default mobile token authentication (^3.0|^4.0)",
     "laravel/reverb": "Required for modern WebSockets / real-time broadcasting (^1.0)",
-    "laravel/fortify": "Reuse Fortify's sign-in, sign-up and authenticator-app two-step check on the bridge auth endpoints (^1.0)"
+    "laravel/fortify": "Reuse Fortify's sign-in, sign-up, password reset, email verification, profile, password, two-factor and passkey management on the bridge (^1.41)",
+    "laravel/passkeys": "Manage passkeys from the app through Fortify's passkeys feature (^0.2)"
   },
   "require-dev": {
     "orchestra/testbench": "^10.0|^11.0",

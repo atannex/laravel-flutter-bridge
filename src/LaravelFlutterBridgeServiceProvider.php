@@ -20,6 +20,7 @@ use Atannex\LaravelFlutterBridge\Console\PruneConnectionsCommand;
 use Atannex\LaravelFlutterBridge\Console\RevokeConnectionsCommand;
 use Atannex\LaravelFlutterBridge\Console\SendConnectionCommand;
 use Atannex\LaravelFlutterBridge\Console\UpdateAppCommand;
+use Atannex\LaravelFlutterBridge\Fortify\FortifyBridge;
 use Atannex\LaravelFlutterBridge\Http\Middleware\EnsureFlutterAppVersion;
 use Atannex\LaravelFlutterBridge\Http\Middleware\EnsureFlutterHeaders;
 use Atannex\LaravelFlutterBridge\Http\Middleware\FormatFlutterResponse;
@@ -33,6 +34,8 @@ use Atannex\LaravelFlutterBridge\Services\FlutterBridgeManager;
 use Atannex\LaravelFlutterBridge\Services\FlutterConnectionManager;
 use Atannex\LaravelFlutterBridge\Services\FlutterResponse;
 use Atannex\LaravelFlutterBridge\Services\FlutterTokenManager;
+use Atannex\LaravelFlutterBridge\Services\PasswordConfirmation;
+use Atannex\LaravelFlutterBridge\Services\VerificationCodeBroker;
 use Atannex\LaravelFlutterBridge\Support\BridgeRequest;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Broadcasting\Factory as BroadcastFactory;
@@ -66,6 +69,11 @@ class LaravelFlutterBridgeServiceProvider extends ServiceProvider
         $this->app->singleton(FlutterConnectionManager::class);
         $this->app->singleton(FlutterPresenceManager::class);
         $this->app->singleton(FcmAccessTokenProvider::class);
+
+        // Laravel Fortify integration (docs/FORTIFY.md)
+        $this->app->singleton(FortifyBridge::class);
+        $this->app->singleton(VerificationCodeBroker::class);
+        $this->app->singleton(PasswordConfirmation::class);
 
         // Bind main bridge manager
         $this->app->singleton('flutter.bridge', function ($app) {
@@ -157,7 +165,7 @@ class LaravelFlutterBridgeServiceProvider extends ServiceProvider
     protected function registerRateLimiters(): void
     {
         RateLimiter::for('flutter-auth', function (Request $request) {
-            $email = strtolower(trim((string) $request->input('email', '')));
+            $email = self::emailKey($request);
 
             return self::limits([
                 self::perMinute('rate_limits.auth.per_minute', 'flutter-auth:'.$email.'|'.$request->ip()),
@@ -194,6 +202,33 @@ class LaravelFlutterBridgeServiceProvider extends ServiceProvider
             ]);
         });
 
+        RateLimiter::for('flutter-password-reset', function (Request $request) {
+            return self::limits([
+                self::perMinute('rate_limits.password_reset.per_minute', 'flutter-password-reset:'.self::emailKey($request).'|'.$request->ip()),
+                self::perMinute('rate_limits.password_reset.per_ip_per_minute', 'flutter-password-reset-ip:'.$request->ip()),
+            ]);
+        });
+
+        RateLimiter::for('flutter-codes', function (Request $request) {
+            $user = BridgeRequest::user($request);
+            $key = $user !== null ? 'user:'.$user->getAuthIdentifier() : 'email:'.self::emailKey($request);
+
+            return self::limits([
+                self::perMinute('rate_limits.codes.per_minute', 'flutter-codes:'.$key.'|'.$request->ip()),
+            ]);
+        });
+
+        foreach (['verification', 'confirm_password', 'account'] as $limiter) {
+            RateLimiter::for('flutter-'.str_replace('_', '-', $limiter), function (Request $request) use ($limiter) {
+                $user = BridgeRequest::user($request);
+                $key = $user !== null ? 'user:'.$user->getAuthIdentifier() : 'ip:'.$request->ip();
+
+                return self::limits([
+                    self::perMinute("rate_limits.{$limiter}.per_minute", "flutter-{$limiter}:".$key),
+                ]);
+            });
+        }
+
         RateLimiter::for('flutter-api', function (Request $request) {
             $user = BridgeRequest::user($request);
             $key = $user !== null ? 'user:'.$user->getAuthIdentifier() : 'ip:'.$request->ip();
@@ -202,6 +237,16 @@ class LaravelFlutterBridgeServiceProvider extends ServiceProvider
                 self::perMinute('rate_limits.api.per_minute', 'flutter-api:'.$key),
             ]);
         });
+    }
+
+    /**
+     * Lower-cased sign-in identifier of the request (Fortify's username field, else email).
+     */
+    protected static function emailKey(Request $request): string
+    {
+        $field = app(FortifyBridge::class)->username();
+
+        return strtolower(trim((string) $request->input($field, $request->input('email', ''))));
     }
 
     /**

@@ -5,6 +5,59 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 [Semantic Versioning](https://semver.org/). The wire protocol shared with the Flutter package is
 specified in [`docs/CONNECTIONS.md`](docs/CONNECTIONS.md).
 
+## [2.2.0] - 2026-11-10
+
+Laravel Fortify over the bridge: every Fortify account feature for the Flutter app with bearer tokens,
+through Fortify's own actions, rules, events and features. Contract: [`docs/FORTIFY.md`](docs/FORTIFY.md).
+Bridge wire protocol stays `2.0.0`; endpoints and error codes are additive.
+
+### Added
+
+- Password reset with an emailed code: `POST auth/forgot-password` (same answer for every address),
+  `POST auth/reset-password/verify-code` (code → one-use `reset_token`), `POST auth/reset-password`
+  (`reset_token`, or the `token` of Fortify's emailed link). The password is changed by Fortify's
+  `ResetsUserPasswords` through the `fortify.passwords` broker (`PasswordReset` fires, the app's password
+  rules apply), then every bridge token, personal access token and connection of the user is revoked.
+  `fortify.reset_channel = link` sends Fortify's web link instead of a code.
+- Email verification with a code: `POST auth/email/verification-notification`, `POST auth/email/verify`
+  (`Verified` fires). `auth/register` returns `email_verification_required` and emails a code to users who
+  must verify; a profile email change does the same.
+- `PUT auth/user/profile-information` (`UpdatesUserProfileInformation`) and `PUT auth/user/password`
+  (`UpdatesUserPasswords`, `revoke_other_sessions`). Rules such as `current_password:web` work with
+  bearer tokens.
+- Password confirmation per access token: `POST auth/user/confirm-password` (Fortify's `ConfirmPassword`,
+  `auth.password_timeout`), `GET auth/user/confirmed-password-status`; `423 password_confirmation_required`
+  on two-factor management (Fortify's `confirmPassword` option) and passkey removal.
+- Authenticator-app management through Fortify's actions and events: enable, QR code (`svg` + `otpauth://`
+  url), secret key, confirm, recovery codes, regenerate, disable.
+- Passkey management (`laravel/passkeys`): list, rename, delete (`PasskeyDeleted`).
+- `features.fortify` in `GET handshake` and `GET config`: installed/enabled, each Fortify feature,
+  confirm options, username, password minimum, password timeout, reset channel, code settings.
+- User payload state (`email_verified`, `email_verified_at`, `two_factor_enabled`,
+  `two_factor_pending_confirmation`, `passkeys_count`) merged into the default payload;
+  `FortifyUserState::for($user)` for custom presenters; `fortify.user_state`.
+- `VerificationCodeBroker` (random_int codes stored as an HMAC in the cache, TTL, attempt lock, single use,
+  constant-time compare), `PasswordConfirmation`, `FortifyBridge` services; localizable markdown code mails
+  `ResetPasswordCodeNotification` / `VerifyEmailCodeNotification` (overridable in config).
+- Config `flutter-bridge.fortify.*` and rate limiters `flutter-password-reset`, `flutter-codes`,
+  `flutter-verification`, `flutter-confirm-password`, `flutter-account` (`rate_limits.*`).
+- New error codes: `404 feature_disabled` (Fortify features), `404 two_factor_not_enabled`,
+  `409 already_verified`, `422 code_invalid` / `code_expired`, `423 code_locked`, `422 reset_token_invalid`,
+  `422 password_invalid`, `423 password_confirmation_required`.
+- `laravel/passkeys` and `laravel/pint` in `require-dev`; `laravel/passkeys` under `suggest`.
+
+### Changed
+
+- With Fortify active, `auth/register` answers `404 feature_disabled` when Fortify's registration feature
+  is off, and lower-cases the email when `fortify.lowercase_usernames` is on.
+- `auth/login` canonicalizes the username like Fortify (`fortify.lowercase_usernames`) and the built-in check
+  uses the `fortify.username` field; the `flutter-auth` limiter keys on that field.
+- The sign-in challenge checks a `recovery_code` before the `code` (Fortify's order) and fires Fortify's
+  `TwoFactorAuthenticationChallenged`, `TwoFactorAuthenticationFailed` and
+  `ValidTwoFactorAuthenticationCodeProvided` events.
+- The handshake `features` map holds a `fortify` object next to the boolean flags.
+- Code style: Laravel Pint (`laravel` preset) across the package.
+
 ## [2.1.0] - 2026-11-10
 
 Plug your own sign-in into the bridge. Bridge wire protocol stays `2.0.0`; the new error codes are
@@ -117,6 +170,7 @@ Bridge protocol v2: connection management between Laravel and Flutter. Pairs wit
   authorization for Reverb/Pusher, FCM device registration and `flutter_push` notification channel,
   social and 2FA endpoints, Dart model/route/translation generators.
 
+[2.2.0]: https://github.com/atannex/laravel-flutter-bridge/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/atannex/laravel-flutter-bridge/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/atannex/laravel-flutter-bridge/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/atannex/laravel-flutter-bridge/releases/tag/v1.0.0

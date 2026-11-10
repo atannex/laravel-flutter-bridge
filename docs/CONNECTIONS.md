@@ -90,6 +90,10 @@ Protocol-level failures add `meta.error_code`. Clients must branch on the code, 
 | 429 | `too_many_requests` | throttled; `Retry-After` header | back off |
 | 503 | `maintenance` | app in maintenance mode | back off / show banner |
 
+Bridge 2.2 adds the account codes of [`FORTIFY.md`](FORTIFY.md) §2 (`feature_disabled` 404,
+`password_confirmation_required` 423, `code_invalid` / `code_expired` 422, `code_locked` 423,
+`already_verified` 409, `reset_token_invalid` / `password_invalid` 422, `two_factor_not_enabled` 404).
+
 `/ping` and `/handshake` are exempt from the version check (426) so an outdated client can still
 discover the update URL.
 
@@ -105,6 +109,9 @@ Every route is rate limited (per minute, configurable under `flutter-bridge.rate
 | `flutter-connect` | `connections.connect` | 10 | `device_id` + IP |
 | `flutter-heartbeat` | `connections.heartbeat`, `connections.disconnect` | 12 | connection id |
 | `flutter-api` | all other routes | 120 | user id, or IP for guests |
+
+The Laravel Fortify endpoints add `flutter-password-reset`, `flutter-codes`, `flutter-verification`,
+`flutter-confirm-password` and `flutter-account` ([`FORTIFY.md`](FORTIFY.md) §6).
 
 ---
 
