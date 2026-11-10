@@ -105,81 +105,12 @@ php artisan flutter:app:create "Acme Mobile" --platforms=android,ios --min-versi
 php artisan flutter:export-config --base-url=https://api.example.com --app-key=fba_xxx
 ```
 
-`flutter:export-config` writes `laravel_bridge_config.g.dart` containing a ready-to-use
-`const laravelBridgeConfig = LaravelConnection(...)` for the Flutter client.
-
-Key options in `config/flutter-bridge.php`:
-
-| Key | Default | Purpose |
-| :--- | :--- | :--- |
-| `connections.heartbeat_interval` / `timeout` | `30` / `90` s | Heartbeat cadence; a session is online while seen within `timeout`. |
-| `connections.require_app_key` | `false` | Reject requests without `X-Flutter-App-Key` (403 `app_key_required`). |
-| `connections.min_app_version` | `null` | Global minimum client version (426 `upgrade_required`); per app via `flutter_apps.min_version`. |
-| `connections.command_ttl` | `1440` min | How long a queued command stays deliverable. |
-| `connections.prune_after_days` | `30` | Retention used by `flutter:connections:prune`. |
-| `features.*` | `true` | Toggle registration / social auth / 2FA (403 `feature_disabled`). |
-| `remote_config` | `[]` | Served by the handshake and `GET config`, merged with the app's `settings`. |
-| `rate_limits.*` | see below | Per-minute limits for the named limiters; `0`/`null` disables one. |
-| `two_factor.max_attempts` | `5` | Wrong 2FA codes before the challenge is destroyed (400 `two_factor_locked`). |
-| `notifications.fcm_credentials` | `null` | Firebase service-account JSON (path, raw JSON or base64) for push. |
-| `broadcasting.expose` / `broadcasting.client` | `null` | Broadcasting connection and public WS host/port/scheme advertised to clients (`reverb` or `pusher`). |
-
-All bridge routes run through `flutter.headers`, `flutter.response`, `flutter.app`, `flutter.version` and
-`flutter.connection`. Errors carry a machine-readable `meta.error_code` (`unauthenticated`,
-`invalid_refresh_token`, `refresh_token_reused`, `connection_revoked`, `upgrade_required`,
-`validation_failed`, `too_many_requests`, `maintenance`, …).
-
-Social sign-in verifies the provider token through `auth.social_user_resolver` (an invokable returning
-`['email' => ..., 'name' => ..., 'id' => ...]`) or Laravel Socialite when installed; listen to
-`FlutterTwoFactorCodeIssued` to deliver 2FA codes.
-
-### Rate limiting
-
-Every bridge route carries a named limiter (`throttle:<name>`, registered by the service provider).
-Throttled requests answer 429 with `meta.error_code = too_many_requests` and a `Retry-After` header.
-
-| Limiter | Routes | Default / min | Env |
-| :--- | :--- | :--- | :--- |
-| `flutter-auth` | login, register, social, 2FA send-otp | 5 per email+IP, 30 per IP | `FLUTTER_RATE_LIMIT_AUTH`, `FLUTTER_RATE_LIMIT_AUTH_IP` |
-| `flutter-2fa` | 2FA verify | 10 per IP | `FLUTTER_RATE_LIMIT_2FA` |
-| `flutter-refresh` | token refresh | 20 per IP | `FLUTTER_RATE_LIMIT_REFRESH` |
-| `flutter-connect` | `connections/connect` | 10 per device_id+IP | `FLUTTER_RATE_LIMIT_CONNECT` |
-| `flutter-heartbeat` | heartbeat / disconnect | 12 per connection | `FLUTTER_RATE_LIMIT_HEARTBEAT` |
-| `flutter-api` | everything else | 120 per user (or IP) | `FLUTTER_RATE_LIMIT_API` |
-
-2FA codes are also brute-force capped: after `two_factor.max_attempts` (`FLUTTER_2FA_MAX_ATTEMPTS`, default 5)
-wrong codes the challenge is destroyed and the client must request a new code.
-
 ### Push notifications (FCM HTTP v1)
 
 ```ini
 FCM_CREDENTIALS=/path/to/service-account.json   # or the raw JSON / base64 JSON
 FCM_PROJECT_ID=my-firebase-project               # optional, defaults to the credentials' project_id
 ```
-
-Create the key in the Firebase console (**Project settings → Service accounts → Generate new private key**).
-The `flutter_push` notification channel mints OAuth2 access tokens from the service account (RS256 JWT,
-cached until shortly before expiry, refreshed and retried once on 401), sends to all of a user's device
-tokens concurrently (`FCM_CONCURRENCY`, default 10), clears tokens FCM reports as `UNREGISTERED`/invalid
-(`FlutterPushTokenInvalidated` event) and fires `FlutterPushSent` with sent / failed / invalidated counts.
-`FCM_BEARER_TOKEN` (+ `FCM_PROJECT_ID`) remains as a static-token fallback for testing; with nothing
-configured, pushes are only logged. `php artisan flutter:status` validates the credentials offline. See
-[`docs/NOTIFICATIONS_CHANNEL.md`](docs/NOTIFICATIONS_CHANNEL.md).
-
-### Artisan commands
-
-| Command | Description |
-| :--- | :--- |
-| `flutter:apps` | List client apps. |
-| `flutter:app:create {name} --platforms= --min-version= --latest-version= --update-url=` | Register an app and print its key. |
-| `flutter:app:update {key} --status= --min-version= --latest-version= --update-url= --name=` | Update status / version policy. |
-| `flutter:app:delete {key} --force` | Delete an app and revoke its sessions. |
-| `flutter:connections --user= --status= --app=` | List sessions with summary statistics. |
-| `flutter:connections:revoke {id?} --user= --reason=` | Revoke a session or all sessions of a user. |
-| `flutter:connections:send {type} {id?} --user= --payload='{"title":"Hi"}' --all` | Queue a command (`revoked`, `logout`, `refresh_config`, `force_update`, `message`, …). |
-| `flutter:connections:prune --days=` | Delete ended sessions, old commands and dead refresh tokens. |
-| `flutter:export-config --base-url= --app-key= --output=` | Generate the Dart connection config. |
-
 ### Facade usage
 
 ```php
@@ -209,13 +140,12 @@ The provider authorizes the `flutter.connections.{connection}` and `users.{id}` 
 ### Scheduling cleanup
 
 ```php
-// routes/console.php (Laravel 11+)
+// routes/console.php
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('flutter:connections:prune')->daily();
 ```
 
-On Laravel 10 add `$schedule->command('flutter:connections:prune')->daily();` to `App\Console\Kernel::schedule()`.
 
 ---
 

@@ -42,6 +42,8 @@ Bridge protocol v2: connection management between Laravel and Flutter. Pairs wit
 
 ### Changed
 
+- **Supported Laravel versions are now 12 and 13** (PHP 8.2+, 8.3+ for Laravel 13). Laravel 10 and
+  11 are past their security support and every release carries open security advisories.
 - **Refresh tokens are real**: stored hashed in `flutter_refresh_tokens`, rotated on every refresh,
   bound to the device and connection session; replaying a rotated token revokes the whole family
   (`refresh_token_reused`). `POST auth/refresh` no longer requires a valid access token.
@@ -56,6 +58,8 @@ Bridge protocol v2: connection management between Laravel and Flutter. Pairs wit
 
 ### Fixed
 
+- The `flutter_push` notification channel failed to resolve on Laravel 13, which binds
+  `extend()` callbacks to the channel manager.
 - Social sign-in trusted the email sent by the client, allowing account takeover. Provider tokens are
   now verified (Socialite or `auth.social_user_resolver`); unverified mode is opt-in.
 - Device registration ignored the bearer user, and anonymous callers could delete devices owned by a

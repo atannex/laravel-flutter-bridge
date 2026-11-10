@@ -130,8 +130,11 @@ class LaravelFlutterBridgeServiceProvider extends ServiceProvider
 
         // Register notification channel driver
         if ($this->app->bound(ChannelManager::class)) {
-            $this->app->make(ChannelManager::class)->extend('flutter_push', function () {
-                return new FlutterPushChannel($this->app->make(FcmAccessTokenProvider::class));
+            // Capture the container: Laravel 13 rebinds extend() callbacks to the manager,
+            // so $this would no longer be this provider inside the closure.
+            $app = $this->app;
+            $this->app->make(ChannelManager::class)->extend('flutter_push', function () use ($app) {
+                return new FlutterPushChannel($app->make(FcmAccessTokenProvider::class));
             });
         }
 
