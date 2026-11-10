@@ -19,7 +19,7 @@ class BroadcastingTest extends TestCase
         $app['config']->set('broadcasting.default', 'recording');
 
         $app->resolving(BroadcastManager::class, function (BroadcastManager $manager) {
-            $manager->extend('recording', fn () => new RecordingBroadcaster());
+            $manager->extend('recording', fn () => new RecordingBroadcaster);
         });
 
         RecordingBroadcaster::$broadcasts = [];
@@ -51,7 +51,7 @@ class BroadcastingTest extends TestCase
     {
         $user = $this->createUser();
         $other = $this->createUser('other@example.test');
-        $connection = $this->connectDevice('phone', ['Authorization' => 'Bearer ' . $other->createToken('t')->plainTextToken]);
+        $connection = $this->connectDevice('phone', ['Authorization' => 'Bearer '.$other->createToken('t')->plainTextToken]);
         $token = $user->createToken('t')->plainTextToken;
 
         $this->bridge('POST', 'broadcasting/auth', [

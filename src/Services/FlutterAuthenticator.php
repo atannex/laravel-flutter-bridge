@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atannex\LaravelFlutterBridge\Services;
 
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -42,7 +43,7 @@ class FlutterAuthenticator
     /**
      * Resolve the user for a sign-in request, or null when the credentials are wrong.
      *
-     * @param class-string<Model> $userModel
+     * @param  class-string<Model>  $userModel
      */
     public function authenticate(Request $request, string $userModel): ?Authenticatable
     {
@@ -57,7 +58,7 @@ class FlutterAuthenticator
         /** @var (Model&Authenticatable)|null $user */
         $user = $userModel::query()->where('email', (string) $request->input('email'))->first();
 
-        if ($user === null || !Hash::check((string) $request->input('password'), $user->getAuthPassword())) {
+        if ($user === null || ! Hash::check((string) $request->input('password'), $user->getAuthPassword())) {
             return null;
         }
 
@@ -77,7 +78,7 @@ class FlutterAuthenticator
      *
      * Validation exceptions thrown by the action propagate unchanged.
      *
-     * @param array<string, mixed> $input
+     * @param  array<string, mixed>  $input
      */
     public function register(array $input, Request $request): Authenticatable
     {
@@ -89,7 +90,7 @@ class FlutterAuthenticator
 
         $user = $registrar($input, $request);
 
-        if (!$user instanceof Authenticatable) {
+        if (! $user instanceof Authenticatable) {
             throw new LogicException('The flutter-bridge.auth.register_using action must return an Authenticatable user.');
         }
 
@@ -114,7 +115,7 @@ class FlutterAuthenticator
      */
     public function checkTwoFactor(Authenticatable $user, Request $request): ?string
     {
-        if (!$this->requiresTwoFactor($user)) {
+        if (! $this->requiresTwoFactor($user)) {
             return null;
         }
 
@@ -125,7 +126,7 @@ class FlutterAuthenticator
             return self::TWO_FACTOR_REQUIRED;
         }
 
-        if (!$user instanceof Model) {
+        if (! $user instanceof Model) {
             return self::TWO_FACTOR_INVALID;
         }
 
@@ -147,13 +148,13 @@ class FlutterAuthenticator
     {
         $mode = config('flutter-bridge.auth.two_factor_challenge', 'auto');
 
-        if ($mode === false || $mode === 'false' || $mode === 0 || $mode === '0' || !$user instanceof Model) {
+        if ($mode === false || $mode === 'false' || $mode === 0 || $mode === '0' || ! $user instanceof Model) {
             return false;
         }
 
         $fortifyInstalled = $this->fortifyInstalled();
 
-        if (!$fortifyInstalled && ($mode === 'auto' || $mode === null)) {
+        if (! $fortifyInstalled && ($mode === 'auto' || $mode === null)) {
             return false;
         }
 
@@ -169,7 +170,7 @@ class FlutterAuthenticator
             return false;
         }
 
-        if (!$fortifyInstalled) {
+        if (! $fortifyInstalled) {
             throw new LogicException('flutter-bridge.auth.two_factor_challenge is enabled but laravel/fortify is not installed.');
         }
 
@@ -201,7 +202,7 @@ class FlutterAuthenticator
      */
     protected function consumeRecoveryCode(Model $user, string $recoveryCode): bool
     {
-        if (!method_exists($user, 'recoveryCodes') || !method_exists($user, 'replaceRecoveryCode')
+        if (! method_exists($user, 'recoveryCodes') || ! method_exists($user, 'replaceRecoveryCode')
             || blank($user->getAttribute('two_factor_recovery_codes'))) {
             return false;
         }
@@ -255,7 +256,7 @@ class FlutterAuthenticator
         if ($configured !== null && $configured !== '') {
             $action = is_string($configured) && class_exists($configured) ? app($configured) : $configured;
 
-            if (is_object($action) && !is_callable($action) && method_exists($action, 'create')) {
+            if (is_object($action) && ! is_callable($action) && method_exists($action, 'create')) {
                 return fn (array $input, Request $request) => $action->create($input);
             }
 
@@ -284,7 +285,7 @@ class FlutterAuthenticator
             $value = app($value);
         }
 
-        if (!is_callable($value)) {
+        if (! is_callable($value)) {
             throw new InvalidArgumentException("flutter-bridge.auth.{$key} must be null, an invokable class name or a callable.");
         }
 
@@ -304,7 +305,7 @@ class FlutterAuthenticator
     /**
      * The encrypter Fortify uses for two-factor columns.
      *
-     * @return \Illuminate\Contracts\Encryption\Encrypter
+     * @return Encrypter
      */
     protected function encrypter()
     {
@@ -323,7 +324,7 @@ class FlutterAuthenticator
      */
     protected function normalizeCode(mixed $value): ?string
     {
-        if (!is_string($value) && !is_int($value)) {
+        if (! is_string($value) && ! is_int($value)) {
             return null;
         }
 

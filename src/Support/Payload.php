@@ -14,12 +14,12 @@ final class Payload
     /**
      * Ensure a map serializes as a JSON object ("{}") even when empty.
      *
-     * @param array<string, mixed>|null $value
+     * @param  array<string, mixed>|null  $value
      * @return array<string, mixed>|stdClass
      */
     public static function object(?array $value): array|stdClass
     {
-        return empty($value) ? new stdClass() : $value;
+        return empty($value) ? new stdClass : $value;
     }
 
     /**

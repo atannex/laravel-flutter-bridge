@@ -37,7 +37,7 @@ class SendConnectionCommand extends Command
         if ($raw !== null && $raw !== '') {
             $payload = json_decode((string) $raw, true);
 
-            if (!is_array($payload) || (array_is_list($payload) && $payload !== [])) {
+            if (! is_array($payload) || (array_is_list($payload) && $payload !== [])) {
                 $this->error('--payload must be a JSON object.');
 
                 return self::FAILURE;

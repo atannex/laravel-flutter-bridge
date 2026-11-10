@@ -7,6 +7,7 @@ namespace Atannex\LaravelFlutterBridge\Console;
 use Illuminate\Console\Command;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class ExportRoutesCommand extends Command
@@ -35,8 +36,9 @@ class ExportRoutesCommand extends Command
             })
             ->map(function (Route $route) {
                 $methods = array_diff($route->methods(), ['HEAD']);
+
                 return [
-                    'uri' => '/' . ltrim($route->uri(), '/'),
+                    'uri' => '/'.ltrim($route->uri(), '/'),
                     'name' => $route->getName() ?? Str::slug(str_replace(['/', '{', '}'], ['_', '', ''], $route->uri()), '_'),
                     'methods' => array_values($methods),
                     'action' => $route->getActionName(),
@@ -47,15 +49,15 @@ class ExportRoutesCommand extends Command
         $this->info("Found {$routes->count()} API routes matching prefix '{$prefix}'.");
 
         $outputPath = $this->option('output')
-            ?? config('flutter-bridge.generator.output_path', '../flutter-laravel-bridge/lib/src/generated') . '/laravel_routes.g.dart';
+            ?? config('flutter-bridge.generator.output_path', '../flutter-laravel-bridge/lib/src/generated').'/laravel_routes.g.dart';
 
         // Resolve absolute or relative path
-        if (!Str::startsWith($outputPath, '/')) {
+        if (! Str::startsWith($outputPath, '/')) {
             $outputPath = base_path($outputPath);
         }
 
         $dir = dirname($outputPath);
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
 
@@ -63,13 +65,14 @@ class ExportRoutesCommand extends Command
         file_put_contents($outputPath, $dartCode);
 
         $this->info("✅ Exported Flutter routes to: {$outputPath}");
+
         return self::SUCCESS;
     }
 
     /**
      * Generate Dart source code.
      *
-     * @param \Illuminate\Support\Collection<int, array{uri: string, name: string, methods: list<string>, action: string}> $routes
+     * @param  Collection<int, array{uri: string, name: string, methods: list<string>, action: string}>  $routes
      */
     protected function generateDartContent($routes): string
     {
@@ -88,6 +91,7 @@ class ExportRoutesCommand extends Command
         }
 
         $content .= "}\n";
+
         return $content;
     }
 }

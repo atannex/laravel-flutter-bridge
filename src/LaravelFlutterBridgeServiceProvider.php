@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types = 1);
+declare(strict_types=1);
 
 namespace Atannex\LaravelFlutterBridge;
 
@@ -56,7 +56,7 @@ class LaravelFlutterBridgeServiceProvider extends ServiceProvider
     {
         // Merge package configuration
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/flutter-bridge.php',
+            __DIR__.'/../config/flutter-bridge.php',
             'flutter-bridge'
         );
 
@@ -101,17 +101,17 @@ class LaravelFlutterBridgeServiceProvider extends ServiceProvider
 
             // Publish config
             $this->publishes([
-                __DIR__ . '/../config/flutter-bridge.php' => config_path('flutter-bridge.php'),
+                __DIR__.'/../config/flutter-bridge.php' => config_path('flutter-bridge.php'),
             ], 'flutter-bridge-config');
 
             // Publish migrations
             $this->publishes([
-                __DIR__ . '/../database/migrations' => database_path('migrations'),
+                __DIR__.'/../database/migrations' => database_path('migrations'),
             ], 'flutter-bridge-migrations');
         }
 
         // Load migrations directly
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         // Register route middleware aliases (before routes are loaded)
         /** @var Router $router */
@@ -126,7 +126,7 @@ class LaravelFlutterBridgeServiceProvider extends ServiceProvider
         $this->registerRateLimiters();
 
         // Load API routes
-        $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+        $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
 
         // Register notification channel driver
         if ($this->app->bound(ChannelManager::class)) {
@@ -160,20 +160,20 @@ class LaravelFlutterBridgeServiceProvider extends ServiceProvider
             $email = strtolower(trim((string) $request->input('email', '')));
 
             return self::limits([
-                self::perMinute('rate_limits.auth.per_minute', 'flutter-auth:' . $email . '|' . $request->ip()),
-                self::perMinute('rate_limits.auth.per_ip_per_minute', 'flutter-auth-ip:' . $request->ip()),
+                self::perMinute('rate_limits.auth.per_minute', 'flutter-auth:'.$email.'|'.$request->ip()),
+                self::perMinute('rate_limits.auth.per_ip_per_minute', 'flutter-auth-ip:'.$request->ip()),
             ]);
         });
 
         RateLimiter::for('flutter-2fa', function (Request $request) {
             return self::limits([
-                self::perMinute('rate_limits.two_factor.per_minute', 'flutter-2fa:' . $request->ip()),
+                self::perMinute('rate_limits.two_factor.per_minute', 'flutter-2fa:'.$request->ip()),
             ]);
         });
 
         RateLimiter::for('flutter-refresh', function (Request $request) {
             return self::limits([
-                self::perMinute('rate_limits.refresh.per_minute', 'flutter-refresh:' . $request->ip()),
+                self::perMinute('rate_limits.refresh.per_minute', 'flutter-refresh:'.$request->ip()),
             ]);
         });
 
@@ -181,7 +181,7 @@ class LaravelFlutterBridgeServiceProvider extends ServiceProvider
             $deviceId = (string) $request->input('device_id', '');
 
             return self::limits([
-                self::perMinute('rate_limits.connections.connect_per_minute', 'flutter-connect:' . $deviceId . '|' . $request->ip()),
+                self::perMinute('rate_limits.connections.connect_per_minute', 'flutter-connect:'.$deviceId.'|'.$request->ip()),
             ]);
         });
 
@@ -190,16 +190,16 @@ class LaravelFlutterBridgeServiceProvider extends ServiceProvider
             $id = $connection instanceof FlutterConnection ? (string) $connection->getKey() : (string) $connection;
 
             return self::limits([
-                self::perMinute('rate_limits.connections.heartbeat_per_minute', 'flutter-heartbeat:' . ($id !== '' ? $id : $request->ip())),
+                self::perMinute('rate_limits.connections.heartbeat_per_minute', 'flutter-heartbeat:'.($id !== '' ? $id : $request->ip())),
             ]);
         });
 
         RateLimiter::for('flutter-api', function (Request $request) {
             $user = BridgeRequest::user($request);
-            $key = $user !== null ? 'user:' . $user->getAuthIdentifier() : 'ip:' . $request->ip();
+            $key = $user !== null ? 'user:'.$user->getAuthIdentifier() : 'ip:'.$request->ip();
 
             return self::limits([
-                self::perMinute('rate_limits.api.per_minute', 'flutter-api:' . $key),
+                self::perMinute('rate_limits.api.per_minute', 'flutter-api:'.$key),
             ]);
         });
     }
@@ -209,7 +209,7 @@ class LaravelFlutterBridgeServiceProvider extends ServiceProvider
      */
     protected static function perMinute(string $configKey, string $key): ?Limit
     {
-        $value = config('flutter-bridge.' . $configKey);
+        $value = config('flutter-bridge.'.$configKey);
 
         if (! is_numeric($value) || (int) $value <= 0) {
             return null;
@@ -221,7 +221,7 @@ class LaravelFlutterBridgeServiceProvider extends ServiceProvider
     /**
      * Collapse the enabled limits; no limits means unlimited.
      *
-     * @param array<int, Limit|null> $limits
+     * @param  array<int, Limit|null>  $limits
      * @return Limit|list<Limit>
      */
     protected static function limits(array $limits): Limit|array
@@ -272,7 +272,7 @@ class LaravelFlutterBridgeServiceProvider extends ServiceProvider
                     return null;
                 }
 
-                $status  = $e->getStatusCode();
+                $status = $e->getStatusCode();
                 $message = $e->getMessage() !== ''
                     ? $e->getMessage()
                     : (SymfonyResponse::$statusTexts[$status] ?? 'Request failed');
@@ -327,7 +327,7 @@ class LaravelFlutterBridgeServiceProvider extends ServiceProvider
                 // Broadcasting is not configured (e.g. missing driver credentials or SDK);
                 // channel authorization is simply unavailable.
                 if ($this->app->bound('log')) {
-                    $this->app['log']->debug('Flutter bridge broadcast channels not registered: ' . $e->getMessage());
+                    $this->app['log']->debug('Flutter bridge broadcast channels not registered: '.$e->getMessage());
                 }
             }
         });

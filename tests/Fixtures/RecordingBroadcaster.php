@@ -29,7 +29,7 @@ class RecordingBroadcaster extends Broadcaster
     public function validAuthenticationResponse($request, $result)
     {
         return [
-            'auth' => 'test-key:' . hash_hmac('sha256', $request->socket_id . ':' . $request->channel_name, 'secret'),
+            'auth' => 'test-key:'.hash_hmac('sha256', $request->socket_id.':'.$request->channel_name, 'secret'),
         ];
     }
 

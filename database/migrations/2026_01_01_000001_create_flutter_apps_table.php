@@ -15,7 +15,7 @@ return new class extends Migration
     {
         $tableName = config('flutter-bridge.apps.table_name', 'flutter_apps');
 
-        if (!Schema::hasTable($tableName)) {
+        if (! Schema::hasTable($tableName)) {
             Schema::create($tableName, function (Blueprint $table) {
                 $table->id();
                 $table->string('name');

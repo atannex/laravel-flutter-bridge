@@ -77,7 +77,8 @@ class BroadcastTestEventCommand extends Command
 
         event(new GenericFlutterBroadcastEvent($channelName, $eventName, $payload));
 
-        $this->info("✅ Broadcast dispatched successfully! Check your Flutter app.");
+        $this->info('✅ Broadcast dispatched successfully! Check your Flutter app.');
+
         return self::SUCCESS;
     }
 }

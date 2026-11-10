@@ -85,8 +85,8 @@ class AuthTokenTest extends TestCase
 
         // Old access token deleted, new one works.
         $this->assertSame(1, PersonalAccessToken::query()->count());
-        $this->bridge('GET', 'auth/me', [], ['Authorization' => 'Bearer ' . $first['access_token']])->assertStatus(401);
-        $this->bridge('GET', 'auth/me', [], ['Authorization' => 'Bearer ' . $second['access_token']])->assertOk();
+        $this->bridge('GET', 'auth/me', [], ['Authorization' => 'Bearer '.$first['access_token']])->assertStatus(401);
+        $this->bridge('GET', 'auth/me', [], ['Authorization' => 'Bearer '.$second['access_token']])->assertOk();
 
         $old = FlutterRefreshToken::query()->where('token', hash('sha256', $first['refresh_token']))->sole();
         $new = FlutterRefreshToken::query()->where('token', hash('sha256', $second['refresh_token']))->sole();
@@ -143,7 +143,7 @@ class AuthTokenTest extends TestCase
         $this->createUser();
         $tokens = $this->login()['authorization'];
 
-        $this->bridge('POST', 'auth/logout', [], ['Authorization' => 'Bearer ' . $tokens['access_token']])->assertOk();
+        $this->bridge('POST', 'auth/logout', [], ['Authorization' => 'Bearer '.$tokens['access_token']])->assertOk();
 
         $this->assertSame(0, PersonalAccessToken::query()->count());
         $this->assertSame(FlutterRefreshToken::REASON_LOGOUT, FlutterRefreshToken::query()->sole()->revoked_reason);
@@ -191,7 +191,7 @@ class AuthTokenTest extends TestCase
             ->assertOk()
             ->json('data.authorization');
 
-        $this->bridge('POST', 'auth/logout', [], ['Authorization' => 'Bearer ' . $rotated['access_token']])->assertOk();
+        $this->bridge('POST', 'auth/logout', [], ['Authorization' => 'Bearer '.$rotated['access_token']])->assertOk();
         $this->assertSame(0, PersonalAccessToken::query()->count());
     }
 

@@ -15,7 +15,7 @@ class FlutterConnectionEstablished
     /**
      * Create a new event instance.
      *
-     * @param bool $resumed Whether an existing session was resumed instead of created.
+     * @param  bool  $resumed  Whether an existing session was resumed instead of created.
      */
     public function __construct(
         public FlutterConnection $connection,

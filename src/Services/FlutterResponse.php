@@ -15,8 +15,7 @@ class FlutterResponse
     /**
      * Build an enterprise success response.
      *
-     * @param mixed $data
-     * @param array<string, mixed> $meta
+     * @param  array<string, mixed>  $meta
      */
     public static function success(
         mixed $data = null,
@@ -39,9 +38,8 @@ class FlutterResponse
      * When provided, $errorCode is exposed as meta.error_code so clients can
      * branch on a stable machine-readable code instead of the message.
      *
-     * @param mixed $errors
-     * @param array<string, mixed> $meta
-     * @param mixed $data optional payload for errors the client acts on
+     * @param  array<string, mixed>  $meta
+     * @param  mixed  $data  optional payload for errors the client acts on
      */
     public static function error(
         string $message = 'An error occurred',
@@ -67,7 +65,7 @@ class FlutterResponse
     /**
      * Build a paginated response compliant with Flutter PaginatedResponse format.
      *
-     * @param array<string, mixed> $meta
+     * @param  array<string, mixed>  $meta
      */
     public static function paginated(
         LengthAwarePaginator|CursorPaginator|Paginator $paginator,
@@ -101,7 +99,7 @@ class FlutterResponse
     /**
      * Build a validation error response (HTTP 422).
      *
-     * @param array<string, list<string>> $errors
+     * @param  array<string, list<string>>  $errors
      */
     public static function validation(
         array $errors,
@@ -157,7 +155,7 @@ class FlutterResponse
     /**
      * Build standardized meta tags.
      *
-     * @param array<string, mixed> $extra
+     * @param  array<string, mixed>  $extra
      * @return array<string, mixed>
      */
     protected static function buildMetadata(array $extra = []): array

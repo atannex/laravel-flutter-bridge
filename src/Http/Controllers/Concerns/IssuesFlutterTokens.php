@@ -52,7 +52,7 @@ trait IssuesFlutterTokens
     /**
      * Build the standard authentication payload.
      *
-     * @param array<string, mixed> $authorization
+     * @param  array<string, mixed>  $authorization
      * @return array<string, mixed>
      */
     protected function authPayload(Request $request, ?Model $user, array $authorization, ?FlutterConnection $connection): array
@@ -99,7 +99,7 @@ trait IssuesFlutterTokens
      */
     protected function ensureFeature(string $feature): void
     {
-        if (!app('flutter.bridge')->featureEnabled($feature)) {
+        if (! app('flutter.bridge')->featureEnabled($feature)) {
             throw FlutterBridgeException::featureDisabled($feature);
         }
     }

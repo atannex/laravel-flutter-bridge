@@ -15,7 +15,7 @@ return new class extends Migration
     {
         $tableName = config('flutter-bridge.connections.table_name', 'flutter_connections');
 
-        if (!Schema::hasTable($tableName)) {
+        if (! Schema::hasTable($tableName)) {
             Schema::create($tableName, function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->unsignedBigInteger('app_id')->nullable()->index();

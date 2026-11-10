@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Atannex\LaravelFlutterBridge\Services;
 
-use DateTimeInterface;
 use Atannex\LaravelFlutterBridge\Exceptions\FlutterBridgeException;
 use Atannex\LaravelFlutterBridge\Models\FlutterConnection;
 use Atannex\LaravelFlutterBridge\Models\FlutterRefreshToken;
 use Atannex\LaravelFlutterBridge\Support\Payload;
+use DateTimeInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -23,7 +24,7 @@ class FlutterTokenManager
     /**
      * Issue a new access / refresh token pair.
      *
-     * @param list<string> $abilities
+     * @param  list<string>  $abilities
      * @return array{token_type: string, access_token: string, refresh_token: string, expires_in: int|null, expires_at: string|null, refresh_expires_at: string|null}
      */
     public function issue(
@@ -141,13 +142,13 @@ class FlutterTokenManager
      */
     public function revokeCurrent(Model $user): bool
     {
-        if (!method_exists($user, 'currentAccessToken')) {
+        if (! method_exists($user, 'currentAccessToken')) {
             return false;
         }
 
         $token = $user->currentAccessToken();
 
-        if (!$token instanceof Model) {
+        if (! $token instanceof Model) {
             return false;
         }
 
@@ -200,7 +201,7 @@ class FlutterTokenManager
     /**
      * Delete Sanctum personal access tokens by id.
      *
-     * @param array<int, int|string|null> $ids
+     * @param  array<int, int|string|null>  $ids
      */
     public function deleteAccessTokens(array $ids): int
     {
@@ -217,7 +218,7 @@ class FlutterTokenManager
     /**
      * Create the Sanctum token and the hashed refresh token record.
      *
-     * @param list<string> $abilities
+     * @param  list<string>  $abilities
      * @return array<string, mixed>
      */
     protected function createPair(
@@ -229,7 +230,7 @@ class FlutterTokenManager
         ?string $deviceId,
         string $family
     ): array {
-        if (!method_exists($user, 'createToken')) {
+        if (! method_exists($user, 'createToken')) {
             throw new LogicException(sprintf(
                 'User model [%s] must use Laravel\\Sanctum\\HasApiTokens to issue Flutter tokens.',
                 $user::class
@@ -260,7 +261,7 @@ class FlutterTokenManager
             'expires_at' => $refreshExpiresAt,
         ]);
 
-        if ($connection !== null && !$connection->belongsToUser($user->getKey())) {
+        if ($connection !== null && ! $connection->belongsToUser($user->getKey())) {
             $connection->forceFill(['user_id' => $user->getKey()])->save();
         }
 
@@ -300,7 +301,7 @@ class FlutterTokenManager
     /**
      * Revoke the matching refresh tokens and delete their access tokens.
      *
-     * @param \Illuminate\Database\Eloquent\Builder<FlutterRefreshToken> $query
+     * @param  Builder<FlutterRefreshToken>  $query
      */
     protected function revokeWhere($query, string $reason, bool $deleteAccessTokens = true): int
     {
@@ -325,7 +326,7 @@ class FlutterTokenManager
     /**
      * Refresh tokens query scoped to a user.
      *
-     * @return \Illuminate\Database\Eloquent\Builder<FlutterRefreshToken>
+     * @return Builder<FlutterRefreshToken>
      */
     protected function userTokens(Model $user)
     {
@@ -341,14 +342,14 @@ class FlutterTokenManager
      */
     protected function bindableConnection(?string $connectionId): ?FlutterConnection
     {
-        if ($connectionId === null || $connectionId === '' || !config('flutter-bridge.connections.enabled', true)) {
+        if ($connectionId === null || $connectionId === '' || ! config('flutter-bridge.connections.enabled', true)) {
             return null;
         }
 
         /** @var FlutterConnection|null $connection */
         $connection = FlutterConnection::query()->find($connectionId);
 
-        return $connection !== null && !$connection->isRevoked() ? $connection : null;
+        return $connection !== null && ! $connection->isRevoked() ? $connection : null;
     }
 
     /**
@@ -360,7 +361,7 @@ class FlutterTokenManager
     {
         $sanctum = 'Laravel\\Sanctum\\Sanctum';
 
-        if (!class_exists($sanctum)) {
+        if (! class_exists($sanctum)) {
             return null;
         }
 

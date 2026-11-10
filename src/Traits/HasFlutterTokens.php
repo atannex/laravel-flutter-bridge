@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Atannex\LaravelFlutterBridge\Traits;
 
-use DateTimeInterface;
 use Atannex\LaravelFlutterBridge\Models\FlutterConnection;
 use Atannex\LaravelFlutterBridge\Models\FlutterRefreshToken;
 use Atannex\LaravelFlutterBridge\Services\FlutterTokenManager;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -22,7 +22,7 @@ trait HasFlutterTokens
      * Create a new access / refresh token pair for a Flutter client device,
      * optionally bound to a connection session.
      *
-     * @param list<string> $abilities
+     * @param  list<string>  $abilities
      * @return array{token_type: string, access_token: string, refresh_token: string, expires_in: int|null, expires_at: string|null, refresh_expires_at: string|null}
      */
     public function createFlutterToken(

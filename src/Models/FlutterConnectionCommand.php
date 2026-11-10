@@ -8,6 +8,7 @@ use Atannex\LaravelFlutterBridge\Support\Payload;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * A server -> client command queued for a connection session.
@@ -16,10 +17,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $connection_id
  * @property string $type
  * @property array<string, mixed>|null $payload
- * @property \Illuminate\Support\Carbon|null $expires_at
- * @property \Illuminate\Support\Carbon|null $delivered_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $expires_at
+ * @property Carbon|null $delivered_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class FlutterConnectionCommand extends Model
 {

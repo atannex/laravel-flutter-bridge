@@ -160,7 +160,7 @@ class FcmAccessTokenProvider
     /**
      * Build the signed RS256 JWT assertion for the OAuth2 jwt-bearer grant.
      *
-     * @param array<string, mixed> $credentials
+     * @param  array<string, mixed>  $credentials
      *
      * @throws FcmException
      */
@@ -184,16 +184,16 @@ class FcmAccessTokenProvider
         ];
 
         $input = self::base64Url((string) json_encode($header, JSON_UNESCAPED_SLASHES))
-            . '.'
-            . self::base64Url((string) json_encode($claims, JSON_UNESCAPED_SLASHES));
+            .'.'
+            .self::base64Url((string) json_encode($claims, JSON_UNESCAPED_SLASHES));
 
         $signature = '';
 
-        if (!openssl_sign($input, $signature, (string) $credentials['private_key'], OPENSSL_ALGO_SHA256)) {
-            throw new FcmException('Unable to sign the FCM JWT with the service-account private_key: ' . (openssl_error_string() ?: 'unknown OpenSSL error'));
+        if (! openssl_sign($input, $signature, (string) $credentials['private_key'], OPENSSL_ALGO_SHA256)) {
+            throw new FcmException('Unable to sign the FCM JWT with the service-account private_key: '.(openssl_error_string() ?: 'unknown OpenSSL error'));
         }
 
-        return $input . '.' . self::base64Url($signature);
+        return $input.'.'.self::base64Url($signature);
     }
 
     /**
@@ -238,7 +238,7 @@ class FcmAccessTokenProvider
     /**
      * Exchange a signed JWT for an access token.
      *
-     * @param array<string, mixed> $credentials
+     * @param  array<string, mixed>  $credentials
      * @return array{token: string, expires_in: int}
      *
      * @throws FcmException
@@ -264,12 +264,12 @@ class FcmAccessTokenProvider
         if ($response->failed()) {
             $reason = $response->json('error_description') ?? $response->json('error') ?? mb_substr($response->body(), 0, 200);
 
-            throw new FcmException("FCM OAuth token request failed (HTTP {$response->status()}): " . (is_string($reason) ? $reason : json_encode($reason)));
+            throw new FcmException("FCM OAuth token request failed (HTTP {$response->status()}): ".(is_string($reason) ? $reason : json_encode($reason)));
         }
 
         $token = $response->json('access_token');
 
-        if (!is_string($token) || $token === '') {
+        if (! is_string($token) || $token === '') {
             throw new FcmException('FCM OAuth token response did not contain an access_token.');
         }
 
@@ -284,7 +284,7 @@ class FcmAccessTokenProvider
     /**
      * Turn the configured value into an array.
      *
-     * @param string|array<string, mixed> $raw
+     * @param  string|array<string, mixed>  $raw
      * @return array<string, mixed>
      *
      * @throws FcmException
@@ -302,7 +302,7 @@ class FcmAccessTokenProvider
         }
 
         if (is_file($value)) {
-            if (!is_readable($value)) {
+            if (! is_readable($value)) {
                 throw new FcmException("FCM credentials file [{$value}] is not readable.");
             }
 
@@ -337,8 +337,8 @@ class FcmAccessTokenProvider
     {
         $data = json_decode($json, true);
 
-        if (!is_array($data)) {
-            throw new FcmException("{$source} is not valid JSON: " . json_last_error_msg());
+        if (! is_array($data)) {
+            throw new FcmException("{$source} is not valid JSON: ".json_last_error_msg());
         }
 
         return $data;
@@ -347,7 +347,7 @@ class FcmAccessTokenProvider
     /**
      * Ensure the credentials can sign tokens.
      *
-     * @param array<string, mixed> $credentials
+     * @param  array<string, mixed>  $credentials
      * @return array<string, mixed>
      *
      * @throws FcmException
@@ -359,7 +359,7 @@ class FcmAccessTokenProvider
         }
 
         foreach (['client_email', 'private_key'] as $field) {
-            if (!isset($credentials[$field]) || !is_string($credentials[$field]) || trim($credentials[$field]) === '') {
+            if (! isset($credentials[$field]) || ! is_string($credentials[$field]) || trim($credentials[$field]) === '') {
                 throw new FcmException("FCM service-account credentials are missing \"{$field}\".");
             }
         }
@@ -367,7 +367,7 @@ class FcmAccessTokenProvider
         // Keys pasted into .env often carry literal "\n" sequences.
         $key = (string) $credentials['private_key'];
 
-        if (!str_contains($key, "\n") && str_contains($key, '\\n')) {
+        if (! str_contains($key, "\n") && str_contains($key, '\\n')) {
             $credentials['private_key'] = $key = str_replace('\\n', "\n", $key);
         }
 
@@ -405,7 +405,7 @@ class FcmAccessTokenProvider
     }
 
     /**
-     * @param array<string, mixed> $credentials
+     * @param  array<string, mixed>  $credentials
      */
     protected function tokenUri(array $credentials): string
     {
@@ -415,11 +415,11 @@ class FcmAccessTokenProvider
     }
 
     /**
-     * @param array<string, mixed> $credentials
+     * @param  array<string, mixed>  $credentials
      */
     protected function cacheKey(array $credentials): string
     {
-        return 'flutter-bridge:fcm-access-token:' . hash('sha256', (string) $credentials['client_email']);
+        return 'flutter-bridge:fcm-access-token:'.hash('sha256', (string) $credentials['client_email']);
     }
 
     protected static function base64Url(string $value): string

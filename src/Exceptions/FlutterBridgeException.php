@@ -15,7 +15,7 @@ use Throwable;
 class FlutterBridgeException extends HttpException
 {
     /**
-     * @param array<string, string> $headers
+     * @param  array<string, string>  $headers
      */
     public function __construct(
         string $message,
@@ -69,7 +69,7 @@ class FlutterBridgeException extends HttpException
     }
 
     /**
-     * @param array<string, mixed> $details
+     * @param  array<string, mixed>  $details
      */
     public static function upgradeRequired(array $details): self
     {

@@ -17,7 +17,7 @@ class FlutterPushSent
     /**
      * Create a new event instance.
      *
-     * @param list<string> $invalidatedTokens
+     * @param  list<string>  $invalidatedTokens
      */
     public function __construct(
         public mixed $notifiable,

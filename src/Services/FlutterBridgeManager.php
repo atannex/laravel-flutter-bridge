@@ -90,7 +90,7 @@ class FlutterBridgeManager
     /**
      * Return a standardized success JSON response.
      *
-     * @param array<string, mixed> $meta
+     * @param  array<string, mixed>  $meta
      */
     public function success(
         mixed $data = null,
@@ -104,7 +104,7 @@ class FlutterBridgeManager
     /**
      * Return a standardized error JSON response.
      *
-     * @param array<string, mixed> $meta
+     * @param  array<string, mixed>  $meta
      */
     public function error(
         string $message = 'An error occurred',
@@ -119,7 +119,7 @@ class FlutterBridgeManager
     /**
      * Return a standardized paginated JSON response.
      *
-     * @param array<string, mixed> $meta
+     * @param  array<string, mixed>  $meta
      */
     public function paginated(
         Paginator $paginator,
@@ -135,7 +135,7 @@ class FlutterBridgeManager
      * A device row owned by a user is never re-assigned to an anonymous caller
      * or to another user: anonymous registrations only touch ownerless rows.
      *
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $attributes
      */
     public function registerDevice(
         int|string|null $userId,
@@ -181,7 +181,8 @@ class FlutterBridgeManager
      * Resolve a service from the container.
      *
      * @template T of object
-     * @param class-string<T> $class
+     *
+     * @param  class-string<T>  $class
      * @return T
      */
     protected function resolve(string $class): object

@@ -35,7 +35,7 @@ class FlutterConnectionRevoked implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('flutter.connections.' . $this->connection->getKey())];
+        return [new PrivateChannel('flutter.connections.'.$this->connection->getKey())];
     }
 
     /**

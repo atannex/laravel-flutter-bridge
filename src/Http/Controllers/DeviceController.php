@@ -96,7 +96,7 @@ class DeviceController extends Controller
      */
     protected function ensureEnabled(): void
     {
-        if (!config('flutter-bridge.devices.enabled', true)) {
+        if (! config('flutter-bridge.devices.enabled', true)) {
             throw FlutterBridgeException::featureDisabled('devices');
         }
     }

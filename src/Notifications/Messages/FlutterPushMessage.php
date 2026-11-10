@@ -7,12 +7,19 @@ namespace Atannex\LaravelFlutterBridge\Notifications\Messages;
 class FlutterPushMessage
 {
     protected string $title = '';
+
     protected string $body = '';
+
     protected ?string $image = null;
+
     protected ?string $sound = 'default';
+
     protected ?int $badge = null;
+
     protected ?string $clickAction = null;
+
     protected ?string $channelId = null;
+
     protected array $data = [];
 
     /**
@@ -21,6 +28,7 @@ class FlutterPushMessage
     public function title(string $title): static
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -30,6 +38,7 @@ class FlutterPushMessage
     public function body(string $body): static
     {
         $this->body = $body;
+
         return $this;
     }
 
@@ -39,6 +48,7 @@ class FlutterPushMessage
     public function image(?string $image): static
     {
         $this->image = $image;
+
         return $this;
     }
 
@@ -48,6 +58,7 @@ class FlutterPushMessage
     public function sound(?string $sound): static
     {
         $this->sound = $sound;
+
         return $this;
     }
 
@@ -57,6 +68,7 @@ class FlutterPushMessage
     public function badge(?int $badge): static
     {
         $this->badge = $badge;
+
         return $this;
     }
 
@@ -66,6 +78,7 @@ class FlutterPushMessage
     public function channelId(?string $channelId): static
     {
         $this->channelId = $channelId;
+
         return $this;
     }
 
@@ -75,17 +88,19 @@ class FlutterPushMessage
     public function clickAction(?string $clickAction): static
     {
         $this->clickAction = $clickAction;
+
         return $this;
     }
 
     /**
      * Set additional arbitrary key-value payload data.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function data(array $data): static
     {
         $this->data = $data;
+
         return $this;
     }
 

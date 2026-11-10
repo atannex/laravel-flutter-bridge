@@ -25,7 +25,7 @@ trait HasFlutterDevices
     /**
      * Register or update a Flutter client device for this user.
      *
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $attributes
      */
     public function registerFlutterDevice(string $deviceId, array $attributes = []): FlutterDevice
     {

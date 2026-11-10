@@ -1,6 +1,6 @@
 <?php
 
-declare (strict_types = 1);
+declare(strict_types=1);
 
 return [
     /*
@@ -12,9 +12,9 @@ return [
     | By default, routes will be available under /api/flutter.
     |
     */
-    'prefix'         => env('FLUTTER_BRIDGE_PREFIX', 'api/flutter'),
+    'prefix' => env('FLUTTER_BRIDGE_PREFIX', 'api/flutter'),
 
-    'middleware'     => ['api'],
+    'middleware' => ['api'],
 
     /*
     |--------------------------------------------------------------------------
@@ -25,25 +25,25 @@ return [
     | callbacks. Supports device-specific personal access tokens.
     |
     */
-    'auth'           => [
-        'enabled'                     => true,
-        'guard'                       => 'sanctum',
-        'user_model'                  => env('AUTH_MODEL', 'App\\Models\\User'),
-        'token_name_prefix'           => 'flutter-app',
-        'token_abilities'             => ['*'],
+    'auth' => [
+        'enabled' => true,
+        'guard' => 'sanctum',
+        'user_model' => env('AUTH_MODEL', 'App\\Models\\User'),
+        'token_name_prefix' => 'flutter-app',
+        'token_abilities' => ['*'],
 
-                                                                                  // Expiration in minutes (null for no expiration)
-        'access_token_ttl'            => env('FLUTTER_ACCESS_TOKEN_TTL', 60),     // 1 hour
-        'refresh_token_ttl'           => env('FLUTTER_REFRESH_TOKEN_TTL', 43200), // 30 days
+        // Expiration in minutes (null for no expiration)
+        'access_token_ttl' => env('FLUTTER_ACCESS_TOKEN_TTL', 60),     // 1 hour
+        'refresh_token_ttl' => env('FLUTTER_REFRESH_TOKEN_TTL', 43200), // 30 days
 
         // Whether to automatically revoke older tokens from the same device
-        'single_session_per_device'   => true,
+        'single_session_per_device' => true,
 
         // Verifies social provider tokens: an invokable class name or callable
         // receiving (string $provider, string $token, Request $request) and
         // returning ['email' => ..., 'name' => ..., 'id' => ...] or null.
         // When null, Laravel Socialite is used if installed.
-        'social_user_resolver'        => null,
+        'social_user_resolver' => null,
 
         // INSECURE: trust the email / name sent by the client without verifying
         // the provider token. Only for local development.
@@ -59,22 +59,22 @@ return [
         // Null result = wrong credentials (422). When null, Fortify's
         // Fortify::authenticateUsing() callback is used if registered, else
         // the built-in email / password check.
-        'authenticate_using'          => null,
+        'authenticate_using' => null,
 
         // Creates the user for POST auth/register: (array $input, Request $request): Authenticatable.
         // Receives every request field. When null, Fortify's CreatesNewUsers
         // action is used if bound, else the built-in name / email / password sign-up.
-        'register_using'              => null,
+        'register_using' => null,
 
         // Shapes `user` in every auth response and GET auth/me:
         // (Authenticatable $user): array. When null, the model is serialized.
-        'user_presenter'              => null,
+        'user_presenter' => null,
 
         // Authenticator-app (TOTP) two-step sign-in on auth/login and auth/social:
         // 'auto' = on when Fortify is installed and the user has a two-factor
         // secret (confirmed, when Fortify's "confirm" option is on); true = always
         // enforce for such users (requires Fortify); false = never.
-        'two_factor_challenge'        => env('FLUTTER_TWO_FACTOR_CHALLENGE', 'auto'),
+        'two_factor_challenge' => env('FLUTTER_TWO_FACTOR_CHALLENGE', 'auto'),
     ],
 
     /*
@@ -94,28 +94,28 @@ return [
     |   flutter-api       every other bridge route
     |
     */
-    'rate_limits'    => [
-        'auth'        => [
+    'rate_limits' => [
+        'auth' => [
             // Keyed by lowercase email + IP.
-            'per_minute'        => env('FLUTTER_RATE_LIMIT_AUTH', 5),
+            'per_minute' => env('FLUTTER_RATE_LIMIT_AUTH', 5),
             // Keyed by IP only.
             'per_ip_per_minute' => env('FLUTTER_RATE_LIMIT_AUTH_IP', 30),
         ],
-        'two_factor'  => [
+        'two_factor' => [
             // Keyed by IP.
             'per_minute' => env('FLUTTER_RATE_LIMIT_2FA', 10),
         ],
-        'refresh'     => [
+        'refresh' => [
             // Keyed by IP.
             'per_minute' => env('FLUTTER_RATE_LIMIT_REFRESH', 20),
         ],
         'connections' => [
             // Keyed by device_id + IP.
-            'connect_per_minute'   => env('FLUTTER_RATE_LIMIT_CONNECT', 10),
+            'connect_per_minute' => env('FLUTTER_RATE_LIMIT_CONNECT', 10),
             // Keyed by connection id.
             'heartbeat_per_minute' => env('FLUTTER_RATE_LIMIT_HEARTBEAT', 12),
         ],
-        'api'         => [
+        'api' => [
             // Keyed by user id, or IP for guests.
             'per_minute' => env('FLUTTER_RATE_LIMIT_API', 120),
         ],
@@ -130,7 +130,7 @@ return [
     | receives 400 "two_factor_locked"; a new code must be requested.
     |
     */
-    'two_factor'     => [
+    'two_factor' => [
         'max_attempts' => (int) env('FLUTTER_2FA_MAX_ATTEMPTS', 5),
     ],
 
@@ -143,11 +143,11 @@ return [
     | and synchronizing FCM / APNs push notification tokens.
     |
     */
-    'devices'        => [
-        'enabled'                     => true,
-        'table_name'                  => 'flutter_devices',
+    'devices' => [
+        'enabled' => true,
+        'table_name' => 'flutter_devices',
         'enforce_device_registration' => false,
-        'prune_after_days'            => 90,
+        'prune_after_days' => 90,
     ],
 
     /*
@@ -170,16 +170,16 @@ return [
     | With neither credentials nor a bearer token, notifications are logged.
     |
     */
-    'notifications'  => [
-        'fcm_credentials'  => env('FCM_CREDENTIALS'),
-        'fcm_project_id'   => env('FCM_PROJECT_ID'),
+    'notifications' => [
+        'fcm_credentials' => env('FCM_CREDENTIALS'),
+        'fcm_project_id' => env('FCM_PROJECT_ID'),
         'fcm_bearer_token' => env('FCM_BEARER_TOKEN'),
 
         // Concurrent FCM requests per batch.
-        'fcm_concurrency'  => (int) env('FCM_CONCURRENCY', 10),
+        'fcm_concurrency' => (int) env('FCM_CONCURRENCY', 10),
 
         // Seconds before an FCM / OAuth request times out.
-        'fcm_timeout'      => (int) env('FCM_TIMEOUT', 10),
+        'fcm_timeout' => (int) env('FCM_TIMEOUT', 10),
     ],
 
     /*
@@ -191,20 +191,20 @@ return [
     | Laravel Reverb, Pusher, or Soketi without requiring CSRF cookies.
     |
     */
-    'broadcasting'   => [
-        'enabled'           => env('FLUTTER_BROADCASTING_ENABLED', true),
-        'auth_path'         => 'broadcasting/auth',
+    'broadcasting' => [
+        'enabled' => env('FLUTTER_BROADCASTING_ENABLED', true),
+        'auth_path' => 'broadcasting/auth',
 
         // Broadcasting connection (from config/broadcasting.php) advertised to
         // Flutter clients in the handshake. Null uses broadcasting.default.
         // Only "reverb" and "pusher" drivers are advertised.
-        'expose'            => env('FLUTTER_BROADCAST_CONNECTION'),
+        'expose' => env('FLUTTER_BROADCAST_CONNECTION'),
 
         // Public WebSocket endpoint overrides for clients, useful when the
         // server-side host (e.g. 127.0.0.1) differs from the public one.
-        'client'            => [
-            'host'   => env('FLUTTER_BROADCAST_HOST'),
-            'port'   => env('FLUTTER_BROADCAST_PORT'),
+        'client' => [
+            'host' => env('FLUTTER_BROADCAST_HOST'),
+            'port' => env('FLUTTER_BROADCAST_PORT'),
             'scheme' => env('FLUTTER_BROADCAST_SCHEME'),
         ],
 
@@ -223,32 +223,32 @@ return [
     | and receive server -> client commands.
     |
     */
-    'connections'    => [
-        'enabled'             => env('FLUTTER_CONNECTIONS_ENABLED', true),
-        'table_name'          => 'flutter_connections',
+    'connections' => [
+        'enabled' => env('FLUTTER_CONNECTIONS_ENABLED', true),
+        'table_name' => 'flutter_connections',
         'commands_table_name' => 'flutter_connection_commands',
 
         // Seconds between client heartbeats.
-        'heartbeat_interval'  => (int) env('FLUTTER_HEARTBEAT_INTERVAL', 30),
+        'heartbeat_interval' => (int) env('FLUTTER_HEARTBEAT_INTERVAL', 30),
 
         // Seconds without a heartbeat after which a session is considered offline.
-        'timeout'             => (int) env('FLUTTER_CONNECTION_TIMEOUT', 90),
+        'timeout' => (int) env('FLUTTER_CONNECTION_TIMEOUT', 90),
 
         // Minimum seconds between last_seen_at writes performed by middleware.
-        'touch_throttle'      => 10,
+        'touch_throttle' => 10,
 
         // Reject requests that do not carry a valid X-Flutter-App-Key header.
-        'require_app_key'     => env('FLUTTER_REQUIRE_APP_KEY', false),
+        'require_app_key' => env('FLUTTER_REQUIRE_APP_KEY', false),
 
         // Global minimum client version (overridden per app by flutter_apps.min_version).
-        'min_app_version'     => env('FLUTTER_MIN_APP_VERSION'),
+        'min_app_version' => env('FLUTTER_MIN_APP_VERSION'),
 
         // Minutes a queued command stays deliverable (null = never expires).
-        'command_ttl'         => 1440,
+        'command_ttl' => 1440,
 
         // Days after which ended sessions, delivered commands and dead refresh
         // tokens are deleted by flutter:connections:prune.
-        'prune_after_days'    => 30,
+        'prune_after_days' => 30,
     ],
 
     /*
@@ -256,7 +256,7 @@ return [
     | Client Apps
     |--------------------------------------------------------------------------
     */
-    'apps'           => [
+    'apps' => [
         'table_name' => 'flutter_apps',
     ],
 
@@ -281,11 +281,11 @@ return [
     | are reported as false in the handshake.
     |
     */
-    'features'       => [
+    'features' => [
         'registration' => true,
-        'social_auth'  => true,
-        'two_factor'   => true,
-        'push'         => true,
+        'social_auth' => true,
+        'two_factor' => true,
+        'push' => true,
     ],
 
     /*
@@ -297,7 +297,7 @@ return [
     | A client app's own `settings` are merged on top of these.
     |
     */
-    'remote_config'  => [],
+    'remote_config' => [],
 
     /*
     |--------------------------------------------------------------------------
@@ -314,9 +314,9 @@ return [
     | }
     |
     */
-    'envelope'       => [
-        'enabled'          => true,
-        'api_version'      => env('FLUTTER_API_VERSION', 'v1'),
+    'envelope' => [
+        'enabled' => true,
+        'api_version' => env('FLUTTER_API_VERSION', 'v1'),
         'include_trace_id' => true,
     ],
 
@@ -329,8 +329,8 @@ return [
     | and client route definitions for the Flutter application.
     |
     */
-    'generator'      => [
-        'output_path'     => env('FLUTTER_EXPORT_PATH', '../flutter-laravel-bridge/lib/src/generated'),
+    'generator' => [
+        'output_path' => env('FLUTTER_EXPORT_PATH', '../flutter-laravel-bridge/lib/src/generated'),
         'model_namespace' => 'App\\Models',
     ],
 ];

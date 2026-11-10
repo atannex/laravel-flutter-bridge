@@ -21,7 +21,7 @@ class AuthenticateUser
             ->first();
 
         if ($user === null || $user->getAttribute('role') === 'suspended'
-            || !Hash::check((string) $request->input('password'), $user->getAuthPassword())) {
+            || ! Hash::check((string) $request->input('password'), $user->getAuthPassword())) {
             return null;
         }
 

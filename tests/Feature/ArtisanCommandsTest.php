@@ -23,7 +23,7 @@ class ArtisanCommandsTest extends TestCase
             '--latest-version' => '1.5.0',
             '--update-url' => 'https://example.test/update',
         ])
-            ->expectsOutputToContain('App key: ' . FlutterApp::KEY_PREFIX)
+            ->expectsOutputToContain('App key: '.FlutterApp::KEY_PREFIX)
             ->assertSuccessful();
 
         $app = FlutterApp::query()->sole();
@@ -142,7 +142,7 @@ class ArtisanCommandsTest extends TestCase
     public function test_export_config_generates_dart_file(): void
     {
         $app = FlutterBridge::apps()->create('Acme');
-        $dir = sys_get_temp_dir() . '/flutter-bridge-export-' . uniqid();
+        $dir = sys_get_temp_dir().'/flutter-bridge-export-'.uniqid();
 
         try {
             $this->artisan('flutter:export-config', [
@@ -151,7 +151,7 @@ class ArtisanCommandsTest extends TestCase
                 '--output' => $dir,
             ])->assertSuccessful();
 
-            $file = $dir . '/laravel_bridge_config.g.dart';
+            $file = $dir.'/laravel_bridge_config.g.dart';
             $this->assertFileExists($file);
             $dart = (string) file_get_contents($file);
 
@@ -173,7 +173,7 @@ class ArtisanCommandsTest extends TestCase
     public function test_export_config_escapes_dart_strings(): void
     {
         config()->set('app.name', "O'Brien \$App");
-        $file = sys_get_temp_dir() . '/flutter-bridge-export-' . uniqid() . '.dart';
+        $file = sys_get_temp_dir().'/flutter-bridge-export-'.uniqid().'.dart';
 
         try {
             $this->artisan('flutter:export-config', ['--output' => $file])->assertSuccessful();

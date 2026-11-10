@@ -8,6 +8,7 @@ use Atannex\LaravelFlutterBridge\Support\Payload;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * A registered Flutter client application identified by an app key.
@@ -21,9 +22,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $latest_version
  * @property string|null $update_url
  * @property array<string, mixed>|null $settings
- * @property \Illuminate\Support\Carbon|null $last_connected_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $last_connected_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class FlutterApp extends Model
 {

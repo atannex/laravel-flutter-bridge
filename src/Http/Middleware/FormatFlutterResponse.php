@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Atannex\LaravelFlutterBridge\Http\Middleware;
 
-use Closure;
 use Atannex\LaravelFlutterBridge\Services\FlutterResponse;
+use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,7 +38,7 @@ class FormatFlutterResponse
         /** @var Response $response */
         $response = $next($request);
 
-        if (!$response instanceof JsonResponse) {
+        if (! $response instanceof JsonResponse) {
             return $response;
         }
 

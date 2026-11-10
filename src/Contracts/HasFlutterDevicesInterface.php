@@ -17,7 +17,7 @@ interface HasFlutterDevicesInterface
     /**
      * Register or update a Flutter client device for this model.
      *
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $attributes
      */
     public function registerFlutterDevice(string $deviceId, array $attributes = []): FlutterDevice;
 

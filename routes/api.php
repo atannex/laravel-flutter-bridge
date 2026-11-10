@@ -70,7 +70,7 @@ Route::prefix(config('flutter-bridge.prefix', 'api/flutter'))
             Route::post('/auth/logout', [AuthController::class, 'logout'])->name('flutter.auth.logout');
 
             // WebSockets / Broadcasting Authentication for Flutter Bearer token
-            Route::post('/' . $broadcastPath, [BroadcastAuthController::class, 'authenticate'])
+            Route::post('/'.$broadcastPath, [BroadcastAuthController::class, 'authenticate'])
                 ->name('flutter.broadcasting.auth');
 
             // Session management for the authenticated user

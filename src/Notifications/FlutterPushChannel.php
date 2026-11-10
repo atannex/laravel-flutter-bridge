@@ -43,7 +43,7 @@ class FlutterPushChannel
     {
         $summary = ['sent' => 0, 'failed' => 0, 'invalidated' => 0];
 
-        if (!method_exists($notification, 'toFlutterPush')) {
+        if (! method_exists($notification, 'toFlutterPush')) {
             return $summary;
         }
 
@@ -59,7 +59,7 @@ class FlutterPushChannel
 
         $provider = $this->credentials ?? app(FcmAccessTokenProvider::class);
 
-        if (!$provider->isConfigured()) {
+        if (! $provider->isConfigured()) {
             $this->logOnly($notifiable, $tokens, $payload);
 
             return $summary;
@@ -81,7 +81,7 @@ class FlutterPushChannel
 
             $accessToken = $provider->accessToken();
         } catch (Throwable $e) {
-            Log::error('FlutterPushChannel: FCM is misconfigured, push notification not sent: ' . $e->getMessage());
+            Log::error('FlutterPushChannel: FCM is misconfigured, push notification not sent: '.$e->getMessage());
 
             return $this->finish($notifiable, $notification, 0, count($tokens), []);
         }
@@ -103,7 +103,7 @@ class FlutterPushChannel
                 $retryTokens = array_map('strval', $unauthorized);
                 $results = array_replace($results, $this->deliver($endpoint, $accessToken, $payload, $retryTokens));
             } catch (Throwable $e) {
-                Log::warning('FlutterPushChannel: could not refresh the FCM access token: ' . $e->getMessage());
+                Log::warning('FlutterPushChannel: could not refresh the FCM access token: '.$e->getMessage());
             }
         }
 
@@ -116,12 +116,14 @@ class FlutterPushChannel
 
             if ($result instanceof Response && $result->successful()) {
                 $sent++;
+
                 continue;
             }
 
             if ($result instanceof Response && $this->isDeadToken($result)) {
                 $this->invalidate($token);
                 $invalidated[] = $token;
+
                 continue;
             }
 
@@ -135,8 +137,8 @@ class FlutterPushChannel
     /**
      * POST the message to every token, `fcm_concurrency` requests at a time.
      *
-     * @param array<string, mixed> $payload
-     * @param list<string> $tokens
+     * @param  array<string, mixed>  $payload
+     * @param  list<string>  $tokens
      * @return array<string, Response|Throwable>
      */
     protected function deliver(string $endpoint, string $accessToken, array $payload, array $tokens): array
@@ -228,7 +230,7 @@ class FlutterPushChannel
                 $rowIds[] = (int) $device->getKey();
             });
         } catch (Throwable $e) {
-            Log::warning('FlutterPushChannel: could not clear an invalid FCM token: ' . $e->getMessage());
+            Log::warning('FlutterPushChannel: could not clear an invalid FCM token: '.$e->getMessage());
         }
 
         if ($rowIds === []) {
@@ -258,13 +260,13 @@ class FlutterPushChannel
             $context['message'] = $result->getMessage();
         }
 
-        Log::warning('FlutterPushChannel: FCM delivery failed [' . ($context['fcm_error'] ?? 'exception') . ']', $context);
+        Log::warning('FlutterPushChannel: FCM delivery failed ['.($context['fcm_error'] ?? 'exception').']', $context);
     }
 
     /**
      * Fire the delivery summary and return it.
      *
-     * @param list<string> $invalidated
+     * @param  list<string>  $invalidated
      * @return array{sent: int, failed: int, invalidated: int}
      */
     protected function finish(mixed $notifiable, Notification $notification, int $sent, int $failed, array $invalidated): array
@@ -277,12 +279,12 @@ class FlutterPushChannel
     /**
      * Log the payload instead of sending it (no credentials configured).
      *
-     * @param list<string> $tokens
-     * @param array<string, mixed> $payload
+     * @param  list<string>  $tokens
+     * @param  array<string, mixed>  $payload
      */
     protected function logOnly(mixed $notifiable, array $tokens, array $payload): void
     {
-        Log::info('FlutterPushChannel: Dispatching push notification to ' . count($tokens) . ' devices', [
+        Log::info('FlutterPushChannel: Dispatching push notification to '.count($tokens).' devices', [
             'notifiable_id' => is_object($notifiable) && method_exists($notifiable, 'getKey') ? $notifiable->getKey() : null,
             'tokens' => $tokens,
             'payload' => $payload,
@@ -294,7 +296,7 @@ class FlutterPushChannel
      */
     protected function maskToken(string $token): string
     {
-        return strlen($token) > 16 ? substr($token, 0, 12) . '…' : $token;
+        return strlen($token) > 16 ? substr($token, 0, 12).'…' : $token;
     }
 
     /**

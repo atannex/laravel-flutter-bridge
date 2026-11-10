@@ -8,7 +8,6 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use ReflectionClass;
 
 class GenerateFlutterModelCommand extends Command
 {
@@ -32,13 +31,14 @@ class GenerateFlutterModelCommand extends Command
         $modelInput = (string) $this->argument('model');
         $modelClass = $this->resolveModelClass($modelInput);
 
-        if (!class_exists($modelClass)) {
+        if (! class_exists($modelClass)) {
             $this->error("Eloquent model class '{$modelClass}' not found!");
+
             return self::FAILURE;
         }
 
         /** @var Model $instance */
-        $instance = new $modelClass();
+        $instance = new $modelClass;
         $tableName = $instance->getTable();
 
         $columns = [];
@@ -64,20 +64,21 @@ class GenerateFlutterModelCommand extends Command
         $dartCode = $this->generateDartModelClass($className, $columns);
 
         $outputPath = $this->option('output')
-            ?? config('flutter-bridge.generator.output_path', '../flutter-laravel-bridge/lib/src/generated') . '/' . Str::snake($className) . '.g.dart';
+            ?? config('flutter-bridge.generator.output_path', '../flutter-laravel-bridge/lib/src/generated').'/'.Str::snake($className).'.g.dart';
 
-        if (!Str::startsWith($outputPath, '/')) {
+        if (! Str::startsWith($outputPath, '/')) {
             $outputPath = base_path($outputPath);
         }
 
         $dir = dirname($outputPath);
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
 
         file_put_contents($outputPath, $dartCode);
 
         $this->info("✅ Generated Dart model '{$className}' at: {$outputPath}");
+
         return self::SUCCESS;
     }
 
@@ -88,7 +89,8 @@ class GenerateFlutterModelCommand extends Command
         }
 
         $namespace = config('flutter-bridge.generator.model_namespace', 'App\\Models');
-        return "{$namespace}\\" . Str::studly($input);
+
+        return "{$namespace}\\".Str::studly($input);
     }
 
     protected function mapColumnToDartType(string $column, ?string $cast): string
@@ -114,7 +116,7 @@ class GenerateFlutterModelCommand extends Command
     }
 
     /**
-     * @param array<string, string> $columns
+     * @param  array<string, string>  $columns
      */
     protected function generateDartModelClass(string $className, array $columns): string
     {
@@ -170,6 +172,7 @@ class GenerateFlutterModelCommand extends Command
         $code .= "    };\n  }\n";
 
         $code .= "}\n";
+
         return $code;
     }
 }

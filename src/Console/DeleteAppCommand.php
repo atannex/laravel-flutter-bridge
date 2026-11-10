@@ -35,8 +35,8 @@ class DeleteAppCommand extends Command
             return self::FAILURE;
         }
 
-        if (!$this->option('force')
-            && !$this->confirm("Delete app \"{$app->name}\" and revoke all of its sessions?", false)) {
+        if (! $this->option('force')
+            && ! $this->confirm("Delete app \"{$app->name}\" and revoke all of its sessions?", false)) {
             $this->line('Aborted.');
 
             return self::FAILURE;

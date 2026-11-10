@@ -11,9 +11,9 @@ use Atannex\LaravelFlutterBridge\Traits\HasFlutterTokens;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable implements HasFlutterTokensInterface, HasFlutterDevicesInterface
+class User extends Authenticatable implements HasFlutterDevicesInterface, HasFlutterTokensInterface
 {
-    use HasApiTokens, HasFlutterTokens, HasFlutterDevices;
+    use HasApiTokens, HasFlutterDevices, HasFlutterTokens;
 
     protected $table = 'users';
 

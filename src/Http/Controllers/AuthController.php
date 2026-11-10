@@ -52,7 +52,7 @@ class AuthController extends Controller
             ]);
         }
 
-        if (!$user instanceof Model) {
+        if (! $user instanceof Model) {
             return FlutterResponse::error('User model does not support API tokens', 500, null, [], 'server_error');
         }
 
@@ -60,7 +60,7 @@ class AuthController extends Controller
             return $challenge;
         }
 
-        if (!$this->supportsTokens($user)) {
+        if (! $this->supportsTokens($user)) {
             return FlutterResponse::error('User model does not support API tokens', 500, null, [], 'server_error');
         }
 
@@ -68,7 +68,7 @@ class AuthController extends Controller
         $issued = $this->issueTokens($request, $user, $deviceName, $validated['device_id'] ?? null);
 
         // Register device if device_id provided
-        if (!empty($validated['device_id']) && config('flutter-bridge.devices.enabled', true)) {
+        if (! empty($validated['device_id']) && config('flutter-bridge.devices.enabled', true)) {
             app('flutter.bridge')->registerDevice($user->getKey(), $validated['device_id'], array_filter([
                 'fcm_token' => $validated['fcm_token'] ?? null,
                 'platform' => $validated['platform'] ?? $request->header('X-Flutter-Platform', 'unknown'),
@@ -98,12 +98,12 @@ class AuthController extends Controller
 
             $user = $authenticator->register($request->all(), $request);
 
-            if (!$user instanceof Model) {
+            if (! $user instanceof Model) {
                 return FlutterResponse::error('User model does not support API tokens', 500, null, [], 'server_error');
             }
         } else {
             $userModelClass = $this->userModel();
-            $table = (new $userModelClass())->getTable();
+            $table = (new $userModelClass)->getTable();
 
             $validated = $request->validate([
                 'name' => ['required', 'string', 'max:255'],
@@ -144,7 +144,7 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return FlutterResponse::unauthorized();
         }
 

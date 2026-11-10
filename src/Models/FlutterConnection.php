@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * A live connection session between one device / app install and the server.
@@ -28,13 +29,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $status
  * @property string|null $state
  * @property array<string, mixed>|null $metadata
- * @property \Illuminate\Support\Carbon|null $connected_at
- * @property \Illuminate\Support\Carbon|null $last_seen_at
- * @property \Illuminate\Support\Carbon|null $disconnected_at
- * @property \Illuminate\Support\Carbon|null $revoked_at
+ * @property Carbon|null $connected_at
+ * @property Carbon|null $last_seen_at
+ * @property Carbon|null $disconnected_at
+ * @property Carbon|null $revoked_at
  * @property string|null $revoked_reason
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read FlutterApp|null $flutterApp
  */
 class FlutterConnection extends Model

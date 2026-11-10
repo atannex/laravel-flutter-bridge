@@ -11,6 +11,7 @@ use Atannex\LaravelFlutterBridge\Services\FlutterConnectionManager;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Laravel\Sanctum\Sanctum;
 
 class BridgeStatusCommand extends Command
 {
@@ -29,13 +30,13 @@ class BridgeStatusCommand extends Command
      */
     public function handle(): int
     {
-        $this->info('📊 Laravel Flutter Bridge Environment Check (v' . FlutterBridgeManager::VERSION . ')');
+        $this->info('📊 Laravel Flutter Bridge Environment Check (v'.FlutterBridgeManager::VERSION.')');
         $this->newLine();
 
         $rows = [];
 
         // Check Sanctum
-        $hasSanctum = class_exists(\Laravel\Sanctum\Sanctum::class);
+        $hasSanctum = class_exists(Sanctum::class);
         $rows[] = [
             'Component' => 'Laravel Sanctum',
             'Status' => $hasSanctum ? '<info>Installed</info>' : '<comment>Not Installed (Suggested)</comment>',
@@ -62,7 +63,7 @@ class BridgeStatusCommand extends Command
             $rows[] = [
                 'Component' => "{$label} Table ({$table})",
                 'Status' => $exists ? '<info>Migrated</info>' : '<error>Missing</error>',
-                'Details' => $exists ? DB::table($table)->count() . ' row(s)' : 'Run php artisan migrate',
+                'Details' => $exists ? DB::table($table)->count().' row(s)' : 'Run php artisan migrate',
             ];
         }
 
@@ -92,6 +93,7 @@ class BridgeStatusCommand extends Command
         $this->renderBridgeSummary();
 
         $this->newLine();
+
         return self::SUCCESS;
     }
 
@@ -112,7 +114,7 @@ class BridgeStatusCommand extends Command
             ];
         }
 
-        if (!$fcm['valid']) {
+        if (! $fcm['valid']) {
             return $row + [
                 'Status' => '<error>Invalid</error>',
                 'Details' => (string) $fcm['error'],

@@ -32,7 +32,7 @@ final class BridgeRequest
     {
         $prefix = trim((string) config('flutter-bridge.prefix', 'api/flutter'), '/');
 
-        return $prefix === '' || $request->is($prefix) || $request->is($prefix . '/*');
+        return $prefix === '' || $request->is($prefix) || $request->is($prefix.'/*');
     }
 
     /**
@@ -91,12 +91,12 @@ final class BridgeRequest
 
         $id = self::connectionId($request);
 
-        if ($id === null || !config('flutter-bridge.connections.enabled', true)) {
+        if ($id === null || ! config('flutter-bridge.connections.enabled', true)) {
             return null;
         }
 
         $connection = FlutterConnection::query()->find($id);
 
-        return $connection instanceof FlutterConnection && !$connection->isRevoked() ? $connection : null;
+        return $connection instanceof FlutterConnection && ! $connection->isRevoked() ? $connection : null;
     }
 }

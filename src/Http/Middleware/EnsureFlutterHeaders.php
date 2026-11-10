@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Atannex\LaravelFlutterBridge\Http\Middleware;
 
-use Closure;
 use Atannex\LaravelFlutterBridge\Services\FlutterBridgeManager;
 use Atannex\LaravelFlutterBridge\Support\BridgeRequest;
+use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -52,7 +52,7 @@ class EnsureFlutterHeaders
     {
         $value = $request->header($name);
 
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             return null;
         }
 

@@ -33,7 +33,7 @@ class FlutterAppManager
     /**
      * Register a new client app. The returned model exposes the generated key.
      *
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $attributes
      */
     public function create(string $name, array $attributes = []): FlutterApp
     {
@@ -56,7 +56,7 @@ class FlutterAppManager
     public function generateKey(): string
     {
         do {
-            $key = FlutterApp::KEY_PREFIX . Str::random(40);
+            $key = FlutterApp::KEY_PREFIX.Str::random(40);
         } while (FlutterApp::query()->where('key', $key)->exists());
 
         return $key;
@@ -90,7 +90,7 @@ class FlutterAppManager
             ? $this->findByKey($app)
             : FlutterApp::query()->find($app);
 
-        if (!$model instanceof FlutterApp) {
+        if (! $model instanceof FlutterApp) {
             throw new InvalidArgumentException("Flutter app [{$app}] not found.");
         }
 
@@ -110,7 +110,7 @@ class FlutterAppManager
     /**
      * Update an app.
      *
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $attributes
      */
     public function update(FlutterApp|string|int $app, array $attributes): FlutterApp
     {
@@ -203,7 +203,7 @@ class FlutterAppManager
     /**
      * Normalize mutable attributes.
      *
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $attributes
      * @return array<string, mixed>
      */
     protected function sanitize(array $attributes): array
@@ -211,7 +211,7 @@ class FlutterAppManager
         $attributes = array_intersect_key($attributes, array_flip(self::UPDATABLE));
 
         if (array_key_exists('status', $attributes)
-            && !in_array($attributes['status'], [FlutterApp::STATUS_ACTIVE, FlutterApp::STATUS_SUSPENDED], true)) {
+            && ! in_array($attributes['status'], [FlutterApp::STATUS_ACTIVE, FlutterApp::STATUS_SUSPENDED], true)) {
             throw new InvalidArgumentException('App status must be "active" or "suspended".');
         }
 

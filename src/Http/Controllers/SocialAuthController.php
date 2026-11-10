@@ -62,13 +62,13 @@ class SocialAuthController extends Controller
 
         $userModelClass = $this->userModel();
         $email = $profile['email'] ?? null;
-        $name = $profile['name'] ?? ($validated['name'] ?? ucfirst($validated['provider']) . ' User');
+        $name = $profile['name'] ?? ($validated['name'] ?? ucfirst($validated['provider']).' User');
 
         /** @var Model|null $user */
         $user = $email ? $userModelClass::query()->where('email', $email)->first() : null;
 
-        if (!$user) {
-            if (!$email) {
+        if (! $user) {
+            if (! $email) {
                 return FlutterResponse::validation(
                     ['email' => ['Email address is required for first-time social sign in']],
                     'Email address is required for first-time social sign in'
@@ -92,14 +92,14 @@ class SocialAuthController extends Controller
             return $challenge;
         }
 
-        if (!$this->supportsTokens($user)) {
+        if (! $this->supportsTokens($user)) {
             return FlutterResponse::error('User model does not support API tokens', 500, null, [], 'server_error');
         }
 
-        $deviceName = $validated['device_name'] ?? ($validated['provider'] . '-Mobile-Login');
+        $deviceName = $validated['device_name'] ?? ($validated['provider'].'-Mobile-Login');
         $issued = $this->issueTokens($request, $user, $deviceName, $validated['device_id'] ?? null);
 
-        if (!empty($validated['device_id']) && config('flutter-bridge.devices.enabled', true)) {
+        if (! empty($validated['device_id']) && config('flutter-bridge.devices.enabled', true)) {
             app('flutter.bridge')->registerDevice($user->getKey(), $validated['device_id'], [
                 'platform' => $request->header('X-Flutter-Platform', 'unknown'),
                 'device_name' => $deviceName,
@@ -115,9 +115,9 @@ class SocialAuthController extends Controller
     /**
      * Resolve the verified provider profile.
      *
-     * @param array<string, mixed> $validated
+     * @param  array<string, mixed>  $validated
      * @return array{email?: string|null, name?: string|null, id?: string|null}|null|false
-     *         false = no verification strategy configured, null = token rejected
+     *                                                                                     false = no verification strategy configured, null = token rejected
      */
     protected function resolveProfile(array $validated, Request $request): array|null|false
     {

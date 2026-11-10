@@ -64,20 +64,21 @@ class ExportTranslationsCommand extends Command
         }
 
         $outputPath = $this->option('output')
-            ?? config('flutter-bridge.generator.output_path', '../flutter-laravel-bridge/lib/src/generated') . "/intl_{$locale}.json";
+            ?? config('flutter-bridge.generator.output_path', '../flutter-laravel-bridge/lib/src/generated')."/intl_{$locale}.json";
 
-        if (!Str::startsWith($outputPath, '/')) {
+        if (! Str::startsWith($outputPath, '/')) {
             $outputPath = base_path($outputPath);
         }
 
         $dir = dirname($outputPath);
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
 
         File::put($outputPath, json_encode($translations, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
-        $this->info("✅ Exported " . count($translations) . " translation strings for [{$locale}] to: {$outputPath}");
+        $this->info('✅ Exported '.count($translations)." translation strings for [{$locale}] to: {$outputPath}");
+
         return self::SUCCESS;
     }
 }

@@ -74,9 +74,10 @@ class PushChannelTest extends TestCase
 
     protected function notification(?FlutterPushMessage $message = null): Notification
     {
-        $message ??= (new FlutterPushMessage())->title('Hello')->body('World');
+        $message ??= (new FlutterPushMessage)->title('Hello')->body('World');
 
-        return new class ($message) extends Notification {
+        return new class($message) extends Notification
+        {
             public function __construct(public FlutterPushMessage $message) {}
 
             public function via(mixed $notifiable): array
@@ -129,7 +130,7 @@ class PushChannelTest extends TestCase
         ], $claims);
 
         $this->assertSame(1, openssl_verify(
-            $parts[0] . '.' . $parts[1],
+            $parts[0].'.'.$parts[1],
             (string) $decode($parts[2]),
             (string) self::$publicKey,
             OPENSSL_ALGO_SHA256
@@ -320,7 +321,7 @@ class PushChannelTest extends TestCase
 
     public function test_message_payload_mapping(): void
     {
-        $message = (new FlutterPushMessage())
+        $message = (new FlutterPushMessage)
             ->title('Order shipped')
             ->body('On its way')
             ->image('https://example.test/i.png')
@@ -337,7 +338,7 @@ class PushChannelTest extends TestCase
             'apns' => ['payload' => ['aps' => ['sound' => 'chime.caf', 'badge' => 3]]],
         ], $message->toArray());
 
-        $minimal = (new FlutterPushMessage())->title('Hi')->body('There')->sound(null)->toArray();
+        $minimal = (new FlutterPushMessage)->title('Hi')->body('There')->sound(null)->toArray();
         $this->assertSame(['notification' => ['title' => 'Hi', 'body' => 'There']], $minimal);
     }
 

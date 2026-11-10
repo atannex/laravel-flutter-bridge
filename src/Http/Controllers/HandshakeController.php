@@ -94,11 +94,11 @@ class HandshakeController extends Controller
             $name = $route->getName();
             $uri = ltrim($route->uri(), '/');
 
-            if ($name === null || !str_starts_with($name, 'flutter.')) {
+            if ($name === null || ! str_starts_with($name, 'flutter.')) {
                 continue;
             }
 
-            if ($prefix !== '' && $uri !== $prefix && !Str::startsWith($uri, $prefix . '/')) {
+            if ($prefix !== '' && $uri !== $prefix && ! Str::startsWith($uri, $prefix.'/')) {
                 continue;
             }
 
@@ -113,7 +113,7 @@ class HandshakeController extends Controller
     /**
      * Broadcasting client options, or null when not advertisable.
      *
-     * @param array<string, string> $endpoints
+     * @param  array<string, string>  $endpoints
      * @return array<string, mixed>|null
      */
     protected function broadcasting(array $endpoints): ?array
@@ -126,7 +126,7 @@ class HandshakeController extends Controller
 
         return array_merge($options, [
             'auth_endpoint' => $endpoints['broadcasting.auth']
-                ?? ltrim($this->prefix() . '/' . ltrim((string) config('flutter-bridge.broadcasting.auth_path', 'broadcasting/auth'), '/'), '/'),
+                ?? ltrim($this->prefix().'/'.ltrim((string) config('flutter-bridge.broadcasting.auth_path', 'broadcasting/auth'), '/'), '/'),
             'connection_channel' => 'private-flutter.connections.{connection}',
             'user_channel' => 'private-users.{user}',
         ]);

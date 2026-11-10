@@ -7,6 +7,7 @@ namespace Atannex\LaravelFlutterBridge\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * A hashed, rotating refresh token bound to an access token, device and session.
@@ -21,13 +22,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $device_id
  * @property string|null $device_name
  * @property list<string>|null $abilities
- * @property \Illuminate\Support\Carbon|null $expires_at
- * @property \Illuminate\Support\Carbon|null $last_used_at
- * @property \Illuminate\Support\Carbon|null $revoked_at
+ * @property Carbon|null $expires_at
+ * @property Carbon|null $last_used_at
+ * @property Carbon|null $revoked_at
  * @property string|null $revoked_reason
  * @property int|null $replaced_by_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class FlutterRefreshToken extends Model
 {
@@ -117,11 +118,11 @@ class FlutterRefreshToken extends Model
     {
         $class = $this->user_type ? Model::getActualClassNameForMorph($this->user_type) : null;
 
-        if ($class === null || !class_exists($class)) {
+        if ($class === null || ! class_exists($class)) {
             $class = (string) config('flutter-bridge.auth.user_model', 'App\\Models\\User');
         }
 
-        if (!class_exists($class)) {
+        if (! class_exists($class)) {
             return null;
         }
 

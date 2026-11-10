@@ -33,7 +33,7 @@ class FlutterCommandQueued implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('flutter.connections.' . $this->command->connection_id)];
+        return [new PrivateChannel('flutter.connections.'.$this->command->connection_id)];
     }
 
     /**

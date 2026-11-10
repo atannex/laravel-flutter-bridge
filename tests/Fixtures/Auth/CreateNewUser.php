@@ -15,7 +15,7 @@ use Laravel\Fortify\Contracts\CreatesNewUsers;
 class CreateNewUser implements CreatesNewUsers
 {
     /**
-     * @param array<string, mixed> $input
+     * @param  array<string, mixed>  $input
      */
     public function create(array $input): TwoFactorUser
     {

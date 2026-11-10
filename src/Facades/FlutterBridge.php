@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atannex\LaravelFlutterBridge\Facades;
 
+use Atannex\LaravelFlutterBridge\Services\FlutterBridgeManager;
 use Illuminate\Support\Facades\Facade;
 
 /**
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool featureEnabled(string $feature)
  * @method static array<string, bool> features()
  *
- * @see \Atannex\LaravelFlutterBridge\Services\FlutterBridgeManager
+ * @see FlutterBridgeManager
  */
 class FlutterBridge extends Facade
 {

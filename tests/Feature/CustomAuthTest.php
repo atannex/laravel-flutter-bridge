@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atannex\LaravelFlutterBridge\Tests\Feature;
 
+use Atannex\LaravelFlutterBridge\LaravelFlutterBridgeServiceProvider;
 use Atannex\LaravelFlutterBridge\Models\FlutterRefreshToken;
 use Atannex\LaravelFlutterBridge\Tests\Fixtures\Auth\AuthenticateUser;
 use Atannex\LaravelFlutterBridge\Tests\Fixtures\Auth\CreateNewUser;
@@ -16,12 +17,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Testing\TestResponse;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\FortifyServiceProvider;
 use Laravel\Sanctum\SanctumServiceProvider;
-use Atannex\LaravelFlutterBridge\LaravelFlutterBridgeServiceProvider;
 use PragmaRX\Google2FA\Google2FA;
 
 class CustomAuthTest extends TestCase
@@ -39,7 +40,7 @@ class CustomAuthTest extends TestCase
     {
         parent::defineEnvironment($app);
 
-        $app['config']->set('app.key', 'base64:' . base64_encode(str_repeat('k', 32)));
+        $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('k', 32)));
 
         $app['config']->set('auth.providers.users.model', TwoFactorUser::class);
         $app['config']->set('flutter-bridge.auth.user_model', TwoFactorUser::class);
@@ -82,11 +83,11 @@ class CustomAuthTest extends TestCase
     /**
      * Give the user an authenticator-app secret; returns the plain secret.
      *
-     * @param list<string> $recoveryCodes
+     * @param  list<string>  $recoveryCodes
      */
     protected function enableTwoFactor(TwoFactorUser $user, bool $confirmed = true, array $recoveryCodes = ['aaaaaaaaaa-bbbbbbbbbb', 'cccccccccc-dddddddddd']): string
     {
-        $secret = (new Google2FA())->generateSecretKey();
+        $secret = (new Google2FA)->generateSecretKey();
 
         $user->forceFill([
             'two_factor_secret' => encrypt($secret),
@@ -98,9 +99,9 @@ class CustomAuthTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $extra
+     * @param  array<string, mixed>  $extra
      */
-    protected function attemptLogin(array $extra = []): \Illuminate\Testing\TestResponse
+    protected function attemptLogin(array $extra = []): TestResponse
     {
         return $this->bridge('POST', 'auth/login', array_merge([
             'email' => 'jane@example.test',
@@ -211,10 +212,10 @@ class CustomAuthTest extends TestCase
     {
         $user = $this->makeUser();
         $secret = $this->enableTwoFactor($user);
-        $code = (new Google2FA())->getCurrentOtp($secret);
+        $code = (new Google2FA)->getCurrentOtp($secret);
 
         // Whitespace is stripped.
-        $this->attemptLogin(['code' => substr($code, 0, 3) . ' ' . substr($code, 3)])
+        $this->attemptLogin(['code' => substr($code, 0, 3).' '.substr($code, 3)])
             ->assertOk()
             ->assertJsonPath('data.user.id', $user->id)
             ->assertJsonStructure(['data' => ['authorization' => ['access_token', 'refresh_token']]]);
@@ -281,7 +282,7 @@ class CustomAuthTest extends TestCase
         $this->bridge('POST', 'auth/social', [
             'provider' => 'google',
             'token' => 'provider-token',
-            'code' => (new Google2FA())->getCurrentOtp($secret),
+            'code' => (new Google2FA)->getCurrentOtp($secret),
         ])->assertOk()->assertJsonStructure(['data' => ['authorization' => ['access_token']]]);
     }
 
@@ -396,7 +397,7 @@ class CustomAuthTest extends TestCase
 
         $token = (string) $login->json('data.authorization.access_token');
 
-        $this->bridge('GET', 'auth/me', [], ['Authorization' => 'Bearer ' . $token])
+        $this->bridge('GET', 'auth/me', [], ['Authorization' => 'Bearer '.$token])
             ->assertOk()
             ->assertJsonPath('data.user.presented', true)
             ->assertJsonPath('data.user.display_name', 'JANE');

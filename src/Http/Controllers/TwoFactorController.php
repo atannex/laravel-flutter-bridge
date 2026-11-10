@@ -39,13 +39,13 @@ class TwoFactorController extends Controller
         $cacheKey = "flutter_2fa:{$validated['two_factor_token']}";
         $cachedData = Cache::get($cacheKey);
 
-        if (!is_array($cachedData) || !isset($cachedData['code'], $cachedData['user_id'])) {
+        if (! is_array($cachedData) || ! isset($cachedData['code'], $cachedData['user_id'])) {
             return FlutterResponse::error('Invalid or expired verification session', 400, null, [], 'invalid_two_factor_session');
         }
 
         $attemptsKey = "flutter_2fa_attempts:{$validated['two_factor_token']}";
 
-        if (!hash_equals((string) $cachedData['code'], $validated['code'])) {
+        if (! hash_equals((string) $cachedData['code'], $validated['code'])) {
             Cache::add($attemptsKey, 0, now()->addSeconds(self::CODE_TTL));
             $attempts = (int) Cache::increment($attemptsKey);
 
@@ -72,11 +72,11 @@ class TwoFactorController extends Controller
         /** @var Model|null $user */
         $user = $userModelClass::query()->find($cachedData['user_id']);
 
-        if (!$user) {
+        if (! $user) {
             return FlutterResponse::notFound('User not found');
         }
 
-        if (!$this->supportsTokens($user)) {
+        if (! $this->supportsTokens($user)) {
             return FlutterResponse::error('User model does not support API tokens', 500, null, [], 'server_error');
         }
 
@@ -106,7 +106,7 @@ class TwoFactorController extends Controller
         /** @var Model|null $user */
         $user = $userModelClass::query()->where('email', $validated['email'])->first();
 
-        if (!$user) {
+        if (! $user) {
             return FlutterResponse::notFound('User account not found');
         }
 

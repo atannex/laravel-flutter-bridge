@@ -7,6 +7,7 @@ namespace Atannex\LaravelFlutterBridge\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -18,9 +19,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $os_version
  * @property string|null $app_version
  * @property array|null $metadata
- * @property \Illuminate\Support\Carbon|null $last_active_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $last_active_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class FlutterDevice extends Model
 {
@@ -65,6 +66,7 @@ class FlutterDevice extends Model
     public function user(): BelongsTo
     {
         $userModel = config('flutter-bridge.auth.user_model', 'App\\Models\\User');
+
         return $this->belongsTo($userModel, 'user_id');
     }
 
@@ -90,6 +92,7 @@ class FlutterDevice extends Model
     public function touchLastActive(): bool
     {
         $this->last_active_at = now();
+
         return $this->save();
     }
 }

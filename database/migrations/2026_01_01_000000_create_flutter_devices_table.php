@@ -15,7 +15,7 @@ return new class extends Migration
     {
         $tableName = config('flutter-bridge.devices.table_name', 'flutter_devices');
 
-        if (!Schema::hasTable($tableName)) {
+        if (! Schema::hasTable($tableName)) {
             Schema::create($tableName, function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('user_id')->nullable()->index();

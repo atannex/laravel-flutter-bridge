@@ -14,6 +14,7 @@ use Atannex\LaravelFlutterBridge\Models\FlutterDevice;
 use Atannex\LaravelFlutterBridge\Models\FlutterRefreshToken;
 use Atannex\LaravelFlutterBridge\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class ConnectionTest extends TestCase
@@ -57,7 +58,7 @@ class ConnectionTest extends TestCase
                 'disconnected_at', 'revoked_at', 'metadata'],
             array_keys($response->json('data.connection'))
         );
-        $this->assertTrue(\Illuminate\Support\Str::isUuid($response->json('data.connection.id')));
+        $this->assertTrue(Str::isUuid($response->json('data.connection.id')));
         $this->assertNotNull($response->json('data.server_time'));
 
         $device = FlutterDevice::query()->where('device_id', 'abc')->first();
@@ -172,9 +173,9 @@ class ConnectionTest extends TestCase
         $owner = $this->createUser();
         $other = $this->createUser('other@example.test');
 
-        $id = $this->connectDevice('abc', ['Authorization' => 'Bearer ' . $owner->createToken('t')->plainTextToken]);
+        $id = $this->connectDevice('abc', ['Authorization' => 'Bearer '.$owner->createToken('t')->plainTextToken]);
 
-        $this->bridge('POST', "connections/{$id}/heartbeat", [], ['Authorization' => 'Bearer ' . $other->createToken('t')->plainTextToken])
+        $this->bridge('POST', "connections/{$id}/heartbeat", [], ['Authorization' => 'Bearer '.$other->createToken('t')->plainTextToken])
             ->assertStatus(404)
             ->assertJsonPath('meta.error_code', 'connection_not_found');
     }
@@ -249,7 +250,7 @@ class ConnectionTest extends TestCase
 
         $tablet = $this->connectDevice('tablet', ['Authorization' => "Bearer {$token}"]);
         $laptop = $this->connectDevice('laptop', ['Authorization' => "Bearer {$token}"]);
-        $foreign = $this->connectDevice('foreign', ['Authorization' => 'Bearer ' . $other->createToken('t')->plainTextToken]);
+        $foreign = $this->connectDevice('foreign', ['Authorization' => 'Bearer '.$other->createToken('t')->plainTextToken]);
 
         $list = $this->bridge('GET', 'connections', [], $auth)->assertOk();
         $this->assertCount(3, $list->json('data.connections'));
@@ -298,7 +299,7 @@ class ConnectionTest extends TestCase
         $this->assertSame(0, PersonalAccessToken::query()->count());
         $this->assertNotNull(FlutterRefreshToken::query()->first()->revoked_at);
 
-        $this->bridge('GET', 'auth/me', [], ['Authorization' => 'Bearer ' . $data['authorization']['access_token']])
+        $this->bridge('GET', 'auth/me', [], ['Authorization' => 'Bearer '.$data['authorization']['access_token']])
             ->assertStatus(401)
             ->assertJsonPath('meta.error_code', 'unauthenticated');
 

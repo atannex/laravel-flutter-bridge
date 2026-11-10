@@ -64,7 +64,7 @@ abstract class TestCase extends Orchestra
             $table->timestamps();
         });
 
-        $this->loadMigrationsFrom(__DIR__ . '/../vendor/laravel/sanctum/database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../vendor/laravel/sanctum/database/migrations');
     }
 
     /**
@@ -87,7 +87,7 @@ abstract class TestCase extends Orchestra
      */
     protected function bridgeUrl(string $path): string
     {
-        return '/api/flutter/' . ltrim($path, '/');
+        return '/api/flutter/'.ltrim($path, '/');
     }
 
     /**
@@ -103,8 +103,8 @@ abstract class TestCase extends Orchestra
     /**
      * Perform a JSON request against the bridge with fresh authentication state.
      *
-     * @param array<string, mixed> $data
-     * @param array<string, string> $headers
+     * @param  array<string, mixed>  $data
+     * @param  array<string, string>  $headers
      */
     protected function bridge(string $method, string $path, array $data = [], array $headers = []): TestResponse
     {
@@ -116,7 +116,7 @@ abstract class TestCase extends Orchestra
     /**
      * Connect a device and return the connection id.
      *
-     * @param array<string, string> $headers
+     * @param  array<string, string>  $headers
      */
     protected function connectDevice(string $deviceId = 'device-1', array $headers = [], array $extra = []): string
     {
@@ -136,7 +136,7 @@ abstract class TestCase extends Orchestra
     /**
      * Log in and return the data payload.
      *
-     * @param array<string, string> $headers
+     * @param  array<string, string>  $headers
      * @return array<string, mixed>
      */
     protected function login(string $email = 'jane@example.test', array $headers = [], array $extra = []): array

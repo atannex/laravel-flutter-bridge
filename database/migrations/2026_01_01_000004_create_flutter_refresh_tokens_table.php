@@ -15,7 +15,7 @@ return new class extends Migration
     {
         $tableName = config('flutter-bridge.refresh_tokens.table_name', 'flutter_refresh_tokens');
 
-        if (!Schema::hasTable($tableName)) {
+        if (! Schema::hasTable($tableName)) {
             Schema::create($tableName, function (Blueprint $table) {
                 $table->id();
                 $table->string('user_type')->nullable();

@@ -22,7 +22,7 @@ class BroadcastAuthController extends Controller
      */
     public function authenticate(Request $request): JsonResponse
     {
-        if (!config('flutter-bridge.broadcasting.enabled', true)) {
+        if (! config('flutter-bridge.broadcasting.enabled', true)) {
             throw FlutterBridgeException::featureDisabled('broadcasting');
         }
 
@@ -40,7 +40,7 @@ class BroadcastAuthController extends Controller
 
         $payload = is_array($result) ? $result : [];
 
-        if (isset($payload['channel_data']) && !is_string($payload['channel_data'])) {
+        if (isset($payload['channel_data']) && ! is_string($payload['channel_data'])) {
             $payload['channel_data'] = json_encode($payload['channel_data']);
         }
 

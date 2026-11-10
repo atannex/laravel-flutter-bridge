@@ -22,11 +22,11 @@ final class BroadcastGate
      */
     public static function enabled(): bool
     {
-        if (!config('flutter-bridge.broadcasting.enabled', true)) {
+        if (! config('flutter-bridge.broadcasting.enabled', true)) {
             return false;
         }
 
-        return !in_array(self::defaultDriver(), self::INERT_DRIVERS, true);
+        return ! in_array(self::defaultDriver(), self::INERT_DRIVERS, true);
     }
 
     /**
@@ -36,7 +36,7 @@ final class BroadcastGate
     {
         $default = config('broadcasting.default');
 
-        if (!is_string($default) || $default === '') {
+        if (! is_string($default) || $default === '') {
             return null;
         }
 
@@ -52,19 +52,19 @@ final class BroadcastGate
      */
     public static function clientOptions(): ?array
     {
-        if (!config('flutter-bridge.broadcasting.enabled', true)) {
+        if (! config('flutter-bridge.broadcasting.enabled', true)) {
             return null;
         }
 
         $name = config('flutter-bridge.broadcasting.expose') ?: config('broadcasting.default');
 
-        if (!is_string($name) || $name === '') {
+        if (! is_string($name) || $name === '') {
             return null;
         }
 
         $connection = config("broadcasting.connections.{$name}");
 
-        if (!is_array($connection) || !in_array($connection['driver'] ?? null, ['reverb', 'pusher'], true)) {
+        if (! is_array($connection) || ! in_array($connection['driver'] ?? null, ['reverb', 'pusher'], true)) {
             return null;
         }
 
@@ -75,7 +75,7 @@ final class BroadcastGate
 
         $host = $client['host'] ?? null;
         if ($host === null || $host === '') {
-            $host = $driver === 'pusher' && !empty($cluster) && empty($options['host'])
+            $host = $driver === 'pusher' && ! empty($cluster) && empty($options['host'])
                 ? "ws-{$cluster}.pusher.com"
                 : ($options['host'] ?? null);
         }

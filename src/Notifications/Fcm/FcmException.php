@@ -9,6 +9,4 @@ use RuntimeException;
 /**
  * Raised for unusable FCM credentials or a failed OAuth2 token exchange.
  */
-class FcmException extends RuntimeException
-{
-}
+class FcmException extends RuntimeException {}

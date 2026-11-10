@@ -13,7 +13,7 @@ interface HasFlutterTokensInterface
      * Create a new access / refresh token pair for a Flutter client device,
      * optionally bound to a connection session.
      *
-     * @param list<string> $abilities
+     * @param  list<string>  $abilities
      * @return array{
      *     token_type: string,
      *     access_token: string,

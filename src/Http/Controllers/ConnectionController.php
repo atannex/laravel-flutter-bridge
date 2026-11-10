@@ -35,7 +35,7 @@ class ConnectionController extends Controller
 
         $validated = $request->validate([
             'device_id' => ['required', 'string', 'max:255'],
-            'platform' => ['required', 'string', 'in:' . self::PLATFORMS],
+            'platform' => ['required', 'string', 'in:'.self::PLATFORMS],
             'app_version' => ['nullable', 'string', 'max:64'],
             'device_name' => ['nullable', 'string', 'max:255'],
             'os_version' => ['nullable', 'string', 'max:64'],
@@ -136,7 +136,7 @@ class ConnectionController extends Controller
 
         $model = $this->connections->find($connection);
 
-        if ($model === null || !$model->belongsToUser($this->userId($request))) {
+        if ($model === null || ! $model->belongsToUser($this->userId($request))) {
             throw FlutterBridgeException::connectionNotFound();
         }
 
@@ -179,7 +179,7 @@ class ConnectionController extends Controller
             throw FlutterBridgeException::connectionNotFound();
         }
 
-        if ($user !== null && $connection->user_id !== null && !$connection->belongsToUser($user->getAuthIdentifier())) {
+        if ($user !== null && $connection->user_id !== null && ! $connection->belongsToUser($user->getAuthIdentifier())) {
             throw FlutterBridgeException::connectionNotFound();
         }
 
@@ -201,7 +201,7 @@ class ConnectionController extends Controller
     {
         $user = $request->user();
 
-        if (!$user instanceof Authenticatable) {
+        if (! $user instanceof Authenticatable) {
             throw new FlutterBridgeException('Unauthenticated.', 401, 'unauthenticated');
         }
 
@@ -223,7 +223,7 @@ class ConnectionController extends Controller
      */
     protected function ensureEnabled(): void
     {
-        if (!config('flutter-bridge.connections.enabled', true)) {
+        if (! config('flutter-bridge.connections.enabled', true)) {
             throw FlutterBridgeException::featureDisabled('connections');
         }
     }

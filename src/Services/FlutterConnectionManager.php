@@ -47,8 +47,8 @@ class FlutterConnectionManager
      *
      * The returned model's `wasRecentlyCreated` flag tells whether it is new.
      *
-     * @param array<string, mixed> $attributes device_id, platform, app_version, device_name,
-     *                                         os_version, fcm_token, bridge_version, metadata
+     * @param  array<string, mixed>  $attributes  device_id, platform, app_version, device_name,
+     *                                            os_version, fcm_token, bridge_version, metadata
      */
     public function connect(
         array $attributes,
@@ -114,7 +114,7 @@ class FlutterConnectionManager
             $connection->setRelation('flutterApp', $app);
         }
 
-        event(new FlutterConnectionEstablished($connection, !$connection->wasRecentlyCreated));
+        event(new FlutterConnectionEstablished($connection, ! $connection->wasRecentlyCreated));
 
         return $connection;
     }
@@ -122,7 +122,7 @@ class FlutterConnectionManager
     /**
      * Record a heartbeat and return (and mark delivered) all pending commands.
      *
-     * @param array<string, mixed> $attributes state, fcm_token, metadata
+     * @param  array<string, mixed>  $attributes  state, fcm_token, metadata
      * @return array{connection: FlutterConnection, commands: EloquentCollection<int, FlutterConnectionCommand>}
      *
      * @throws FlutterBridgeException
@@ -144,7 +144,7 @@ class FlutterConnectionManager
             'disconnected_at' => null,
         ];
 
-        if (!empty($attributes['state']) && in_array($attributes['state'], ['foreground', 'background'], true)) {
+        if (! empty($attributes['state']) && in_array($attributes['state'], ['foreground', 'background'], true)) {
             $updates['state'] = $attributes['state'];
         }
 
@@ -239,8 +239,8 @@ class FlutterConnectionManager
     /**
      * Queue a command for a session (pushed instantly when broadcasting is on).
      *
-     * @param array<string, mixed> $payload
-     * @param int|null $ttl Minutes the command stays deliverable (null = config, <= 0 = never expires).
+     * @param  array<string, mixed>  $payload
+     * @param  int|null  $ttl  Minutes the command stays deliverable (null = config, <= 0 = never expires).
      */
     public function sendCommand(
         FlutterConnection|string $connection,
@@ -269,7 +269,7 @@ class FlutterConnectionManager
     /**
      * Queue a command for every non-revoked session of a user.
      *
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      * @return Collection<int, FlutterConnectionCommand>
      */
     public function sendCommandToUser(int|string $userId, string $type, array $payload = [], ?int $ttl = null): Collection
@@ -286,7 +286,7 @@ class FlutterConnectionManager
     /**
      * Queue a command for every active session (optionally of one app).
      *
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      * @return Collection<int, FlutterConnectionCommand>
      */
     public function sendCommandToAll(string $type, array $payload = [], ?int $ttl = null, ?int $appId = null): Collection
@@ -318,7 +318,7 @@ class FlutterConnectionManager
     /**
      * Mark commands as delivered.
      *
-     * @param iterable<FlutterConnectionCommand|int> $commands
+     * @param  iterable<FlutterConnectionCommand|int>  $commands
      */
     public function markDelivered(iterable $commands): int
     {
@@ -502,7 +502,7 @@ class FlutterConnectionManager
      */
     protected function syncDevice(FlutterConnection $connection, ?string $fcmToken, bool $fcmTokenProvided): void
     {
-        if (!config('flutter-bridge.devices.enabled', true)) {
+        if (! config('flutter-bridge.devices.enabled', true)) {
             return;
         }
 

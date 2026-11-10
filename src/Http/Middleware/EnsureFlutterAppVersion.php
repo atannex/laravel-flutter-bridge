@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Atannex\LaravelFlutterBridge\Http\Middleware;
 
-use Closure;
 use Atannex\LaravelFlutterBridge\Exceptions\FlutterBridgeException;
 use Atannex\LaravelFlutterBridge\Services\FlutterAppManager;
 use Atannex\LaravelFlutterBridge\Support\BridgeRequest;
+use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
