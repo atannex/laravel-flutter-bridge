@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Atannex\LaravelFlutterBridge\Tests\Feature\Fortify;
 
 use Atannex\LaravelFlutterBridge\Notifications\Fortify\VerifyEmailCodeNotification;
+use Atannex\LaravelFlutterBridge\Tests\Fixtures\Fortify\CodeVerifiedUser;
 use Atannex\LaravelFlutterBridge\Tests\Fixtures\Fortify\FortifyUser;
 use Atannex\LaravelFlutterBridge\Tests\FortifyTestCase;
-use Atannex\LaravelFlutterBridge\Traits\VerifiesEmailWithFlutterCodes;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -81,10 +81,7 @@ class EmailVerificationTest extends FortifyTestCase
     public function test_the_trait_skips_the_web_link_when_the_bridge_sends_a_code(): void
     {
         $saved = $this->makeUser(verified: false);
-        $user = (new class extends FortifyUser
-        {
-            use VerifiesEmailWithFlutterCodes;
-        })->newFromBuilder($saved->getAttributes());
+        $user = (new CodeVerifiedUser)->newFromBuilder($saved->getAttributes());
 
         $this->app->instance('request', Request::create('/api/flutter/auth/user/profile-information', 'PUT'));
         $user->sendEmailVerificationNotification();
