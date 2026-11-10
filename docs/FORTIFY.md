@@ -259,7 +259,18 @@ waits. Replace them with your own subclasses of
 (or any notification taking `$code, $expiresIn`).
 
 Registration still fires `Registered`, so an app that sends Laravel's
-verification link from that event sends both the link and the code.
+verification link from that event (Laravel does by default for
+`MustVerifyEmail` users) would email both the link and the code. Add the
+`VerifiesEmailWithFlutterCodes` trait to the user model: on bridge requests
+(sign-up and email changes from the app) it skips the web link whenever the
+bridge sends a code; web requests keep the link.
+
+```php
+class User extends Authenticatable implements MustVerifyEmail
+{
+    use Notifiable, VerifiesEmailWithFlutterCodes;
+}
+```
 
 ### Rate limiters (`flutter-bridge.rate_limits`, per minute; 0/null disables)
 

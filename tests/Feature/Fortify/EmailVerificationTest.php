@@ -7,10 +7,12 @@ namespace Atannex\LaravelFlutterBridge\Tests\Feature\Fortify;
 use Atannex\LaravelFlutterBridge\Notifications\Fortify\VerifyEmailCodeNotification;
 use Atannex\LaravelFlutterBridge\Tests\Fixtures\Fortify\FortifyUser;
 use Atannex\LaravelFlutterBridge\Tests\FortifyTestCase;
+use Atannex\LaravelFlutterBridge\Traits\VerifiesEmailWithFlutterCodes;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Fortify\Features;
@@ -74,6 +76,27 @@ class EmailVerificationTest extends FortifyTestCase
         $user = FortifyUser::query()->firstOrFail();
         Notification::assertSentTo($user, VerifyEmail::class);
         Notification::assertSentTo($user, VerifyEmailCodeNotification::class);
+    }
+
+    public function test_the_trait_skips_the_web_link_when_the_bridge_sends_a_code(): void
+    {
+        $saved = $this->makeUser(verified: false);
+        $user = (new class extends FortifyUser
+        {
+            use VerifiesEmailWithFlutterCodes;
+        })->newFromBuilder($saved->getAttributes());
+
+        $this->app->instance('request', Request::create('/api/flutter/auth/user/profile-information', 'PUT'));
+        $user->sendEmailVerificationNotification();
+        Notification::assertNotSentTo($user, VerifyEmail::class);
+
+        config(['flutter-bridge.fortify.verification.send_code_on_email_change' => false]);
+        $user->sendEmailVerificationNotification();
+        Notification::assertSentToTimes($user, VerifyEmail::class, 1);
+
+        $this->app->instance('request', Request::create('/account', 'PUT'));
+        $user->sendEmailVerificationNotification();
+        Notification::assertSentToTimes($user, VerifyEmail::class, 2);
     }
 
     public function test_register_code_can_be_turned_off(): void
