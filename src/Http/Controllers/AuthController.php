@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Atannex\LaravelFlutterBridge\Http\Controllers;
 
 use Atannex\LaravelFlutterBridge\Http\Controllers\Concerns\IssuesFlutterTokens;
+use Atannex\LaravelFlutterBridge\Services\FlutterAuthenticator;
 use Atannex\LaravelFlutterBridge\Services\FlutterResponse;
 use Atannex\LaravelFlutterBridge\Services\FlutterTokenManager;
 use Atannex\LaravelFlutterBridge\Support\BridgeRequest;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,27 +26,38 @@ class AuthController extends Controller
     /**
      * Authenticate a Flutter client and issue device tokens.
      */
-    public function login(Request $request): JsonResponse
+    public function login(Request $request, FlutterAuthenticator $authenticator): JsonResponse
     {
         $this->ensureFeature('auth');
 
+        // A custom authenticator (config or Fortify) validates its own credential fields.
+        $custom = $authenticator->usesCustomAuthenticator();
+
         $validated = $request->validate([
-            'email' => ['required', 'string', 'email'],
+            'email' => $custom ? ['nullable', 'string'] : ['required', 'string', 'email'],
             'password' => ['required', 'string'],
+            'code' => ['nullable', 'string', 'max:255'],
+            'recovery_code' => ['nullable', 'string', 'max:255'],
             'device_name' => ['nullable', 'string', 'max:255'],
             'device_id' => ['nullable', 'string', 'max:255'],
             'fcm_token' => ['nullable', 'string'],
             'platform' => ['nullable', 'string', 'max:32'],
         ]);
 
-        $userModelClass = $this->userModel();
-        /** @var (Model&\Illuminate\Contracts\Auth\Authenticatable)|null $user */
-        $user = $userModelClass::query()->where('email', $validated['email'])->first();
+        $user = $authenticator->authenticate($request, $this->userModel());
 
-        if (!$user || !Hash::check($validated['password'], $user->getAuthPassword())) {
+        if ($user === null) {
             throw ValidationException::withMessages([
                 'email' => [trans('auth.failed')],
             ]);
+        }
+
+        if (!$user instanceof Model) {
+            return FlutterResponse::error('User model does not support API tokens', 500, null, [], 'server_error');
+        }
+
+        if ($challenge = $this->twoFactorChallenge($request, $user)) {
+            return $challenge;
         }
 
         if (!$this->supportsTokens($user)) {
@@ -71,27 +85,45 @@ class AuthController extends Controller
     /**
      * Register a new user from the Flutter client.
      */
-    public function register(Request $request): JsonResponse
+    public function register(Request $request, FlutterAuthenticator $authenticator): JsonResponse
     {
         $this->ensureFeature('registration');
 
-        $userModelClass = $this->userModel();
-        $table = (new $userModelClass())->getTable();
+        if ($authenticator->usesCustomRegistration()) {
+            // The action (config or Fortify CreatesNewUsers) validates its own fields.
+            $validated = $request->validate([
+                'device_name' => ['nullable', 'string', 'max:255'],
+                'device_id' => ['nullable', 'string', 'max:255'],
+            ]);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique($table, 'email')],
-            'password' => ['required', 'string', 'min:8'],
-            'device_name' => ['nullable', 'string', 'max:255'],
-            'device_id' => ['nullable', 'string', 'max:255'],
-        ]);
+            $user = $authenticator->register($request->all(), $request);
 
-        /** @var Model $user */
-        $user = $userModelClass::query()->create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-        ]);
+            if (!$user instanceof Model) {
+                return FlutterResponse::error('User model does not support API tokens', 500, null, [], 'server_error');
+            }
+        } else {
+            $userModelClass = $this->userModel();
+            $table = (new $userModelClass())->getTable();
+
+            $validated = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'email', 'max:255', Rule::unique($table, 'email')],
+                'password' => ['required', 'string', 'min:8'],
+                'device_name' => ['nullable', 'string', 'max:255'],
+                'device_id' => ['nullable', 'string', 'max:255'],
+            ]);
+
+            /** @var Model $user */
+            $user = $userModelClass::query()->create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+            ]);
+        }
+
+        if ($user instanceof Authenticatable) {
+            event(new Registered($user));
+        }
 
         $deviceName = $validated['device_name'] ?? 'Flutter-Client';
         $issued = $this->supportsTokens($user)
@@ -117,7 +149,7 @@ class AuthController extends Controller
         }
 
         return FlutterResponse::success([
-            'user' => $user,
+            'user' => app(FlutterAuthenticator::class)->present($user),
         ], 'User profile retrieved');
     }
 

@@ -35,13 +35,15 @@
   },
   "suggest": {
     "laravel/sanctum": "Required for default mobile token authentication (^3.0|^4.0)",
-    "laravel/reverb": "Required for modern WebSockets / real-time broadcasting (^1.0)"
+    "laravel/reverb": "Required for modern WebSockets / real-time broadcasting (^1.0)",
+    "laravel/fortify": "Reuse Fortify's sign-in, sign-up and authenticator-app two-step check on the bridge auth endpoints (^1.0)"
   },
   "require-dev": {
     "orchestra/testbench": "^10.0|^11.0",
     "phpunit/phpunit": "^11.0|^12.0",
     "laravel/sanctum": "^4.0",
-    "larastan/larastan": "^3.0"
+    "larastan/larastan": "^3.0",
+    "laravel/fortify": "^1.41"
   },
   "autoload": {
     "psr-4": {

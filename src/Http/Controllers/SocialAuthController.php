@@ -6,6 +6,7 @@ namespace Atannex\LaravelFlutterBridge\Http\Controllers;
 
 use Atannex\LaravelFlutterBridge\Http\Controllers\Concerns\IssuesFlutterTokens;
 use Atannex\LaravelFlutterBridge\Services\FlutterResponse;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,6 +38,8 @@ class SocialAuthController extends Controller
             'email' => ['nullable', 'string', 'email'],
             'name' => ['nullable', 'string', 'max:255'],
             'provider_id' => ['nullable', 'string', 'max:255'],
+            'code' => ['nullable', 'string', 'max:255'],
+            'recovery_code' => ['nullable', 'string', 'max:255'],
             'device_name' => ['nullable', 'string', 'max:255'],
             'device_id' => ['nullable', 'string', 'max:255'],
         ]);
@@ -82,6 +85,11 @@ class SocialAuthController extends Controller
             if (Schema::connection($user->getConnectionName())->hasColumn($user->getTable(), 'email_verified_at')) {
                 $user->forceFill(['email_verified_at' => now()])->save();
             }
+        }
+
+        // Accounts protected by an authenticator app still need their code.
+        if ($user instanceof Authenticatable && ($challenge = $this->twoFactorChallenge($request, $user))) {
+            return $challenge;
         }
 
         if (!$this->supportsTokens($user)) {

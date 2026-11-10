@@ -48,6 +48,33 @@ return [
         // INSECURE: trust the email / name sent by the client without verifying
         // the provider token. Only for local development.
         'social_trust_client_profile' => env('FLUTTER_SOCIAL_TRUST_CLIENT', false),
+
+        /*
+        | Use your own sign-in (all optional). Each option takes null, an
+        | invokable class name or a callable; prefer class names so
+        | `php artisan config:cache` keeps working.
+        */
+
+        // Resolves the user for POST auth/login: (Request $request): ?Authenticatable.
+        // Null result = wrong credentials (422). When null, Fortify's
+        // Fortify::authenticateUsing() callback is used if registered, else
+        // the built-in email / password check.
+        'authenticate_using'          => null,
+
+        // Creates the user for POST auth/register: (array $input, Request $request): Authenticatable.
+        // Receives every request field. When null, Fortify's CreatesNewUsers
+        // action is used if bound, else the built-in name / email / password sign-up.
+        'register_using'              => null,
+
+        // Shapes `user` in every auth response and GET auth/me:
+        // (Authenticatable $user): array. When null, the model is serialized.
+        'user_presenter'              => null,
+
+        // Authenticator-app (TOTP) two-step sign-in on auth/login and auth/social:
+        // 'auto' = on when Fortify is installed and the user has a two-factor
+        // secret (confirmed, when Fortify's "confirm" option is on); true = always
+        // enforce for such users (requires Fortify); false = never.
+        'two_factor_challenge'        => env('FLUTTER_TWO_FACTOR_CHALLENGE', 'auto'),
     ],
 
     /*

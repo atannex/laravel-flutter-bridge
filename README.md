@@ -149,6 +149,59 @@ Schedule::command('flutter:connections:prune')->daily();
 
 ---
 
+## 🔐 Use your own sign-in (Fortify)
+
+By default `auth/login` checks email + password and `auth/register` creates a user from
+`name` / `email` / `password`. If your app has its own sign-in rules, plug them in so the mobile
+endpoints cannot bypass them. Every option is optional and takes an invokable class name (works with
+`php artisan config:cache`) or a callable.
+
+```php
+// config/flutter-bridge.php
+'auth' => [
+    // ...
+
+    // (Request $request): ?Authenticatable  — null = wrong credentials (422)
+    'authenticate_using'   => App\Actions\Fortify\AuthenticateUser::class,
+
+    // (array $input, Request $request): Authenticatable  — gets every request field
+    'register_using'       => App\Actions\Fortify\CreateNewUser::class,
+
+    // (Authenticatable $user): array  — shapes `user` in auth responses and auth/me
+    'user_presenter'       => App\Http\Presenters\UserPresenter::class,
+
+    // 'auto' | true | false — authenticator-app two-step sign-in
+    'two_factor_challenge' => 'auto',
+],
+```
+
+When **Laravel Fortify** is installed you usually need none of the above:
+
+| Step | Order used |
+| :--- | :--- |
+| Sign-in (`auth/login`) | `authenticate_using` → `Fortify::authenticateUsing()` callback → built-in email/password |
+| Sign-up (`auth/register`) | `register_using` → Fortify's bound `CreatesNewUsers` action (e.g. `App\Actions\Fortify\CreateNewUser`, with your password rules, roles and extra fields) → built-in |
+| Two-step sign-in | users with a Fortify two-factor secret (confirmed, when Fortify's `confirm` option is on) must send `code` or `recovery_code` |
+| `user` in responses | `user_presenter` → the model |
+
+A class registered as `register_using` may be invokable or expose Fortify's `create(array $input)`.
+Sign-up fires `Illuminate\Auth\Events\Registered`, and validation errors from your action come back as
+the usual `422 validation_failed` envelope.
+
+Two-step flow for accounts with an authenticator app:
+
+```text
+POST auth/login {email, password}                 → 422 meta.error_code "two_factor_required", data {"two_factor": true}
+POST auth/login {email, password, code: "123456"} → 200 tokens   (or recovery_code: "xxxxxxxxxx-xxxxxxxxxx", usable once)
+wrong code                                        → 422 "two_factor_invalid"
+```
+
+`auth/social` applies the same check after the provider token is verified. The email one-time-code
+endpoints (`auth/2fa/send-otp`, `auth/2fa/verify`) are a separate feature; set
+`features.two_factor` to `false` if your app should only allow authenticator-app sign-in.
+
+---
+
 ## 🛠️ Artisan Commands
 
 ### Generate Dart Model from Eloquent

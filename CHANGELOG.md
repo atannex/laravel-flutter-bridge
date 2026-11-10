@@ -5,6 +5,39 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 [Semantic Versioning](https://semver.org/). The wire protocol shared with the Flutter package is
 specified in [`docs/CONNECTIONS.md`](docs/CONNECTIONS.md).
 
+## [2.1.0] - 2026-11-10
+
+Plug your own sign-in into the bridge. Bridge wire protocol stays `2.0.0`; the new error codes are
+additive.
+
+### Added
+
+- `auth.authenticate_using`: custom sign-in for `auth/login` (invokable class or callable receiving the
+  request, returning the user or null). Falls back to Laravel Fortify's `Fortify::authenticateUsing()`
+  callback when Fortify is installed, then to the built-in email/password check.
+- `auth.register_using`: custom sign-up for `auth/register` (invokable class, class with
+  `create(array $input)`, or callable receiving `(array $input, Request $request)`). Falls back to
+  Fortify's bound `CreatesNewUsers` action, then the built-in sign-up. Every request field is passed,
+  so app-specific fields reach the action; its validation errors return `422 validation_failed`.
+- Authenticator-app two-step sign-in on `auth/login` and `auth/social` via `auth.two_factor_challenge`
+  (`auto` default, `true`, `false`). With `auto`, users with a Fortify two-factor secret (confirmed,
+  when Fortify's `confirm` option is on) must send `code` or `recovery_code`. Codes are verified with
+  Fortify's `TwoFactorAuthenticationProvider`; recovery codes work once and are replaced. New error
+  codes `422 two_factor_required` and `422 two_factor_invalid` with `data: {"two_factor": true}`.
+- `auth.user_presenter`: shapes `user` in every auth response and `auth/me`.
+- `FlutterAuthenticator` service and an optional `$data` argument on `FlutterResponse::error()`.
+- `laravel/fortify` listed under `suggest`.
+
+### Changed
+
+- `auth/login` and `auth/social` accept optional `code` and `recovery_code` fields.
+- With a custom or Fortify sign-in, `auth/login` no longer requires `email` itself (your authenticator
+  reads its own fields); `password` is still required.
+- `auth/register` now fires `Illuminate\Auth\Events\Registered` (also for the built-in sign-up), so
+  listeners such as email verification run for mobile sign-ups.
+- Apps with Laravel Fortify and users who enabled an authenticator app: `auth/login` now asks those users
+  for their code. Set `auth.two_factor_challenge` to `false` to keep the 2.0 behaviour.
+
 ## [2.0.0] - 2026-11-09
 
 Bridge protocol v2: connection management between Laravel and Flutter. Pairs with
@@ -84,5 +117,6 @@ Bridge protocol v2: connection management between Laravel and Flutter. Pairs wit
   authorization for Reverb/Pusher, FCM device registration and `flutter_push` notification channel,
   social and 2FA endpoints, Dart model/route/translation generators.
 
+[2.1.0]: https://github.com/atannex/laravel-flutter-bridge/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/atannex/laravel-flutter-bridge/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/atannex/laravel-flutter-bridge/releases/tag/v1.0.0

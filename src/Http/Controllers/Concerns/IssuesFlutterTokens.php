@@ -6,9 +6,13 @@ namespace Atannex\LaravelFlutterBridge\Http\Controllers\Concerns;
 
 use Atannex\LaravelFlutterBridge\Exceptions\FlutterBridgeException;
 use Atannex\LaravelFlutterBridge\Models\FlutterConnection;
+use Atannex\LaravelFlutterBridge\Services\FlutterAuthenticator;
+use Atannex\LaravelFlutterBridge\Services\FlutterResponse;
 use Atannex\LaravelFlutterBridge\Services\FlutterTokenManager;
 use Atannex\LaravelFlutterBridge\Support\BridgeRequest;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
@@ -56,7 +60,9 @@ trait IssuesFlutterTokens
         $payload = [];
 
         if ($user !== null) {
-            $payload['user'] = $user;
+            $payload['user'] = $user instanceof Authenticatable
+                ? app(FlutterAuthenticator::class)->present($user)
+                : $user;
         }
 
         $payload['authorization'] = $authorization;
@@ -66,6 +72,24 @@ trait IssuesFlutterTokens
         }
 
         return $payload;
+    }
+
+    /**
+     * Run the authenticator-app two-step check; a response means tokens must not be issued.
+     */
+    protected function twoFactorChallenge(Request $request, Authenticatable $user): ?JsonResponse
+    {
+        $result = app(FlutterAuthenticator::class)->checkTwoFactor($user, $request);
+
+        if ($result === null) {
+            return null;
+        }
+
+        $message = $result === FlutterAuthenticator::TWO_FACTOR_REQUIRED
+            ? 'A two-factor authentication code is required.'
+            : 'The two-factor authentication code is invalid.';
+
+        return FlutterResponse::error($message, 422, ['code' => [$message]], [], $result, ['two_factor' => true]);
     }
 
     /**

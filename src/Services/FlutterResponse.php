@@ -41,13 +41,15 @@ class FlutterResponse
      *
      * @param mixed $errors
      * @param array<string, mixed> $meta
+     * @param mixed $data optional payload for errors the client acts on
      */
     public static function error(
         string $message = 'An error occurred',
         int $statusCode = 400,
         mixed $errors = null,
         array $meta = [],
-        ?string $errorCode = null
+        ?string $errorCode = null,
+        mixed $data = null
     ): JsonResponse {
         if ($errorCode !== null) {
             $meta['error_code'] = $errorCode;
@@ -56,7 +58,7 @@ class FlutterResponse
         return response()->json([
             'success' => false,
             'message' => $message,
-            'data' => null,
+            'data' => $data,
             'errors' => $errors,
             'meta' => self::buildMetadata($meta),
         ], $statusCode);
