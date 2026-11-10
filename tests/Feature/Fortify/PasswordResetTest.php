@@ -56,6 +56,19 @@ class PasswordResetTest extends FortifyTestCase
         $this->assertMatchesRegularExpression('/^\d{6}$/', $code);
     }
 
+    public function test_forgot_password_takes_the_same_minimum_time_for_unknown_addresses(): void
+    {
+        config(['flutter-bridge.fortify.forgot_password_min_duration' => 300_000]);
+        $this->makeUser();
+
+        foreach (['jane@example.test', 'nobody@example.test'] as $email) {
+            $started = microtime(true);
+            $this->bridge('POST', 'auth/forgot-password', ['email' => $email])->assertOk();
+
+            $this->assertGreaterThanOrEqual(0.3, microtime(true) - $started, $email);
+        }
+    }
+
     public function test_code_mail_is_localizable_markdown_with_the_app_name(): void
     {
         $user = $this->makeUser();

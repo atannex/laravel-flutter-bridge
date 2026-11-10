@@ -75,7 +75,9 @@ Wire protocol stays `2.0.0`; every endpoint below is additive. Envelope and
    `password_confirmation_required`.
 5. Every new route: rate limited (named limiters, §6), JSON envelope, localized
    messages (`__()`), no user enumeration (forgot-password answers 200 with
-   the same body and message for any address).
+   the same body and message for any address, and takes the same minimum
+   time, `fortify.forgot_password_min_duration`, default 750 ms; queue the
+   reset mail if delivery can take longer).
 
 ## 2. Endpoints (prefix `api/flutter`, `X-Flutter-App-Key` as usual)
 

@@ -13,7 +13,8 @@ Bridge wire protocol stays `2.0.0`; endpoints and error codes are additive.
 
 ### Added
 
-- Password reset with an emailed code: `POST auth/forgot-password` (same answer for every address),
+- Password reset with an emailed code: `POST auth/forgot-password` (same answer and the same minimum
+  duration for every address, `fortify.forgot_password_min_duration`),
   `POST auth/reset-password/verify-code` (code → one-use `reset_token`), `POST auth/reset-password`
   (`reset_token`, or the `token` of Fortify's emailed link). The password is changed by Fortify's
   `ResetsUserPasswords` through the `fortify.passwords` broker (`PasswordReset` fires, the app's password

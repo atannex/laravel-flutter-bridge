@@ -187,6 +187,11 @@ return [
         // 'link' (Fortify's emailed web link; reset with its `token`).
         'reset_channel' => env('FLUTTER_FORTIFY_RESET_CHANNEL', 'code'),
 
+        // Minimum duration of forgot-password, in microseconds: the same with
+        // or without an account, so timing does not reveal registered
+        // addresses. Queue the reset mail when sending can take longer.
+        'forgot_password_min_duration' => (int) env('FLUTTER_FORTIFY_FORGOT_MIN_DURATION', 750_000),
+
         // Emailed codes (password reset, email verification).
         'codes' => [
             'length' => (int) env('FLUTTER_FORTIFY_CODE_LENGTH', 6),

@@ -20,6 +20,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Illuminate\Support\Timebox;
 use LogicException;
 use Throwable;
 
@@ -48,19 +49,26 @@ class PasswordResetController extends Controller
         $email = (string) $request->input($field);
         $channel = $this->fortify()->resetChannel();
 
-        if ($channel === 'link') {
-            // Fortify's own flow: the broker emails the web reset link (and throttles it).
-            $this->broker()->sendResetLink([$field => $email]);
-            $expiresIn = $this->linkLifetime();
-        } else {
-            $expiresIn = $this->codes()->ttl();
+        // Same minimum duration with or without an account, so response times
+        // do not reveal which addresses are registered (queue the mail if
+        // delivery can take longer than the box).
+        $expiresIn = (new Timebox)->call(function (Timebox $timebox) use ($channel, $field, $email): int {
+            if ($channel === 'link') {
+                // Fortify's own flow: the broker emails the web reset link (and throttles it).
+                $this->broker()->sendResetLink([$field => $email]);
+
+                return $this->linkLifetime();
+            }
+
             $user = $this->findUser($email);
 
             if ($user !== null) {
                 $issued = $this->codes()->issue(VerificationCodeBroker::PURPOSE_PASSWORD_RESET, $this->resetSubject($email));
                 $this->notify($user, 'reset_password', $issued['code'], $issued['expires_in']);
             }
-        }
+
+            return $this->codes()->ttl();
+        }, (int) config('flutter-bridge.fortify.forgot_password_min_duration', 750_000));
 
         return FlutterResponse::success([
             'sent' => true,
